@@ -26,6 +26,12 @@ export default async function Header() {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
+                <Link href="/my-bids" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                  My Bids
+                </Link>
+                <Link href="/my-auctions" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                  My Auctions
+                </Link>
                 <Link href="/create" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
                   Create Auction
                 </Link>
