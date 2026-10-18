@@ -4,11 +4,12 @@ import { useState, useTransition } from 'react';
 import { updateReservePrice, endAuctionEarly, cancelAuction } from '@/app/actions/seller';
 
 interface SellerPanelProps {
-  auctionId: number;
+  auctionId: string | number;
   status: string;
   reservePrice: number | null;
   currentHighestBid: number | null;
   startingPrice: number;
+  totalBids?: number;
 }
 
 export default function SellerPanel({
@@ -17,6 +18,7 @@ export default function SellerPanel({
   reservePrice,
   currentHighestBid,
   startingPrice,
+  totalBids = 0,
 }: SellerPanelProps) {
   const [newReserve, setNewReserve] = useState<string>(
     reservePrice !== null && reservePrice !== undefined ? String(reservePrice) : ''
@@ -80,23 +82,65 @@ export default function SellerPanel({
   };
 
   return (
-    <div className="bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50 rounded-xl p-6 shadow-sm">
+    <div className="bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50 rounded-2xl p-6 shadow-sm space-y-6">
       <div className="flex items-center justify-between pb-4 border-b border-amber-200/80 dark:border-amber-800/40">
         <div className="flex items-center space-x-2">
           <span className="flex h-3 w-3 relative">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
           </span>
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Seller Management Panel</h2>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Seller Dashboard</h2>
         </div>
-        <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300">
-          Owner View
+        <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300">
+          Owner Account
         </span>
       </div>
 
-      <p className="mt-3 text-xs text-gray-600 dark:text-gray-400">
-        You are the seller of this auction. Bidding is disabled for your account. You have exclusive administrative control below.
-      </p>
+      {/* Seller Dashboard Metrics Widget (Requirement 2) */}
+      <div className="grid grid-cols-2 gap-3.5">
+        <div className="bg-white dark:bg-gray-800/90 p-4 rounded-xl border border-amber-200/60 dark:border-amber-800/30 shadow-2xs">
+          <span className="text-xs text-gray-500 dark:text-gray-400 block font-medium">Current Highest Bid</span>
+          <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5 block">
+            ${currentHighestBid ? parseFloat(String(currentHighestBid)).toFixed(2) : parseFloat(String(startingPrice)).toFixed(2)}
+          </span>
+          <span className="text-[11px] text-gray-400 dark:text-gray-500">
+            {currentHighestBid ? 'Active leading offer' : 'Starting floor'}
+          </span>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800/90 p-4 rounded-xl border border-amber-200/60 dark:border-amber-800/30 shadow-2xs">
+          <span className="text-xs text-gray-500 dark:text-gray-400 block font-medium">Total Bids</span>
+          <span className="text-xl font-extrabold text-gray-900 dark:text-white mt-0.5 block">
+            {totalBids}
+          </span>
+          <span className="text-[11px] text-gray-400 dark:text-gray-500">
+            Total verified placements
+          </span>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800/90 p-4 rounded-xl border border-amber-200/60 dark:border-amber-800/30 shadow-2xs">
+          <span className="text-xs text-gray-500 dark:text-gray-400 block font-medium">Starting Price</span>
+          <span className="text-base font-bold text-gray-800 dark:text-gray-200 mt-0.5 block">
+            ${parseFloat(String(startingPrice)).toFixed(2)}
+          </span>
+          <span className="text-[11px] text-gray-400 dark:text-gray-500">Minimum opening</span>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800/90 p-4 rounded-xl border border-amber-200/60 dark:border-amber-800/30 shadow-2xs">
+          <span className="text-xs text-gray-500 dark:text-gray-400 block font-medium">Reserve Price</span>
+          <span className="text-base font-bold text-amber-700 dark:text-amber-400 mt-0.5 block">
+            {reservePrice ? `$${parseFloat(String(reservePrice)).toFixed(2)}` : 'None'}
+          </span>
+          <span className="text-[11px] text-gray-400 dark:text-gray-500">Confidential floor</span>
+        </div>
+      </div>
+
+      <div className="p-3 bg-amber-100/70 dark:bg-amber-950/60 rounded-xl border border-amber-200 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
+        <span className="text-base flex-shrink-0 mt-0.5">🔒</span>
+        <p className="leading-relaxed">
+          <strong>Self-Bidding Prevented:</strong> You are the verified seller of this listing. Bidding is disabled on this account to enforce CockroachDB marketplace integrity.
+        </p>
+      </div>
 
       {feedback && (
         <div

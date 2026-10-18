@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WinAuction XP - Live Auctions Explorer</title>
+<!-- Tailwind CSS v3 CDN with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Font: Tahoma lookalike / classic clean sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            tahoma: ['"Open Sans"', 'Tahoma', 'Verdana', 'sans-serif'],
+          },
+          colors: {
+            xp: {
+              titleStart: '#0058EE',
+              titleMid: '#3593FF',
+              titleEnd: '#0855DD',
+              menubar: '#ECE9D8',
+              borderOuter: '#0055EA',
+              cardBg: '#FFFFFF',
+              cardBorder: '#7F9DB9',
+              greenBtn: '#388E3C',
+              highlight: '#316AC5',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- BEGIN: Custom XP Styles -->
+<style data-purpose="xp-window-chrome">
+    body {
+      background: radial-gradient(circle at 50% 20%, #2989d8 0%, #1e5799 100%);
+      min-height: 100vh;
+      font-family: 'Open Sans', Tahoma, Verdana, sans-serif;
+    }
+
+    /* XP Titlebar Gradient */
+    .xp-titlebar {
+      background: linear-gradient(180deg, #0058EE 0%, #3593FF 10%, #288eff 30%, #0053E1 60%, #0855DD 100%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+    }
+
+    /* XP Window Button Styling */
+    .xp-btn-ctrl {
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 1px rgba(0, 0, 0, 0.3);
+      border: 1px solid #ffffff;
+      border-radius: 3px;
+    }
+
+    /* XP Classic Inset Frame */
+    .xp-sunken {
+      border-top: 1px solid #716F64;
+      border-left: 1px solid #716F64;
+      border-right: 1px solid #F1EFE2;
+      border-bottom: 1px solid #F1EFE2;
+      box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.15);
+    }
+
+    /* XP Button Raised Bevel */
+    .xp-button-bevel {
+      background: linear-gradient(180deg, #FFFFFF 0%, #ECE9D8 40%, #D8D2BD 100%);
+      border: 1px solid #003C74;
+      box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .xp-button-bevel:hover {
+      background: linear-gradient(180deg, #FFF0CF 0%, #FFDF88 40%, #FFC850 100%);
+      border-color: #E29922;
+    }
+    .xp-button-bevel:active {
+      background: linear-gradient(180deg, #D4CEBA 0%, #ECE9D8 100%);
+      box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3);
+    }
+
+    /* XP Luna Green Primary Action Button */
+    .xp-green-action {
+      background: linear-gradient(180deg, #6fd373 0%, #38a53e 45%, #27812c 55%, #3ca842 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.25);
+      border: 1px solid #1c5e21;
+      text-shadow: 0 -1px 0 rgba(0,0,0,0.4);
+    }
+    .xp-green-action:hover {
+      background: linear-gradient(180deg, #81de85 0%, #46be4c 45%, #2fa136 55%, #4dc254 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .xp-green-action:active {
+      background: linear-gradient(180deg, #256a29 0%, #308f35 100%);
+      box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5);
+    }
+
+    /* Status Bar Groove */
+    .xp-status-cell {
+      border-top: 1px solid #7F9DB9;
+      border-left: 1px solid #7F9DB9;
+      border-right: 1px solid #FFFFFF;
+      border-bottom: 1px solid #FFFFFF;
+    }
+  </style>
+<!-- END: Custom XP Styles -->
+</head>
+<body class="p-3 md:p-6 text-slate-800 antialiased flex flex-col justify-between select-none">
+<!-- BEGIN: MainWindowWrapper -->
+<main class="w-full max-w-7xl mx-auto rounded-t-lg shadow-2xl border-2 border-xp-borderOuter bg-[#ECE9D8] overflow-hidden" data-purpose="desktop-window-container">
+<!-- BEGIN: TitleBar -->
+<header class="xp-titlebar px-3 py-1.5 flex items-center justify-between text-white select-none" data-purpose="window-titlebar">
+<!-- Title & Icon -->
+<div class="flex items-center space-x-2">
+<!-- XP Gavel / Window Icon -->
+<div class="w-4 h-4 rounded-sm bg-white/20 flex items-center justify-center p-0.5 shadow-sm border border-white/40">
+<svg class="w-3.5 h-3.5 text-yellow-300" fill="currentColor" viewbox="0 0 20 20">
+<path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+</svg>
+</div>
+<span class="text-xs md:text-sm font-bold tracking-wide text-white drop-shadow">
+          WinAuction XP - Live Auctions Explorer [Online - Marketplace Network]
+        </span>
+</div>
+<!-- Window Control Buttons (Minimize, Maximize, Close) -->
+<div class="flex items-center space-x-1" data-purpose="window-controls">
+<!-- Minimize -->
+<button aria-label="Minimize" class="xp-btn-ctrl w-5 h-5 bg-gradient-to-b from-[#3A80DF] to-[#0A48B3] flex items-center justify-center text-white text-[10px] font-bold hover:brightness-110 active:brightness-90" title="Minimize">
+<div class="w-2.5 h-[2px] bg-white mt-2"></div>
+</button>
+<!-- Maximize -->
+<button aria-label="Maximize" class="xp-btn-ctrl w-5 h-5 bg-gradient-to-b from-[#3A80DF] to-[#0A48B3] flex items-center justify-center text-white text-[10px] font-bold hover:brightness-110 active:brightness-90" title="Maximize">
+<div class="w-2.5 h-2.5 border border-white bg-transparent"></div>
+</button>
+<!-- Close (Luna Red) -->
+<button aria-label="Close" class="xp-btn-ctrl w-5 h-5 bg-gradient-to-b from-[#E76C55] to-[#BF2F17] hover:from-[#f37c67] hover:to-[#da3319] flex items-center justify-center text-white font-bold text-xs" title="Close">
+          ✕
+        </button>
+</div>
+</header>
+<!-- END: TitleBar -->
+<!-- BEGIN: MenuBar -->
+<nav class="bg-[#ECE9D8] border-b border-[#D4D0C8] px-2 py-0.5 flex flex-wrap items-center justify-between text-xs text-slate-800" data-purpose="standard-menu-bar">
+<!-- Standard Application Dropdown Menus -->
+<div class="flex items-center space-x-3 py-0.5">
+<span class="cursor-pointer px-1.5 py-0.5 rounded hover:bg-[#316AC5] hover:text-white transition-colors"><u>F</u>ile</span>
+<span class="cursor-pointer px-1.5 py-0.5 rounded hover:bg-[#316AC5] hover:text-white transition-colors"><u>E</u>dit</span>
+<span class="cursor-pointer px-1.5 py-0.5 rounded hover:bg-[#316AC5] hover:text-white transition-colors"><u>V</u>iew</span>
+<span class="cursor-pointer px-1.5 py-0.5 rounded hover:bg-[#316AC5] hover:text-white transition-colors"><u>F</u>avorites</span>
+<span class="cursor-pointer px-1.5 py-0.5 rounded hover:bg-[#316AC5] hover:text-white transition-colors"><u>T</u>ools</span>
+<span class="cursor-pointer px-1.5 py-0.5 rounded hover:bg-[#316AC5] hover:text-white transition-colors"><u>H</u>elp</span>
+</div>
+<!-- Application Quick Status Indicator -->
+<div class="flex items-center space-x-2 text-[11px] text-slate-600 pr-1">
+<span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span>AuctionEngine v2.4 (Connected)</span>
+</div>
+</nav>
+<!-- END: MenuBar -->
+<!-- BEGIN: UserSiteNavigationStrip -->
+<!-- Matches navigation from screenshot: AuctionSystem | My Bids | My Auctions | Create Auction | test_user1 | Logout -->
+<div class="bg-gradient-to-b from-[#FAF9F5] to-[#ECE9D8] px-3 py-2 border-b border-[#BEBAAF] flex flex-wrap items-center justify-between gap-2 text-xs" data-purpose="site-navigation-bar">
+<div class="flex items-center space-x-2">
+<div class="border border-[#7F9DB9] bg-white px-2 py-0.5 rounded shadow-inner font-bold text-slate-900 tracking-wider">
+          AuctionSystem
+        </div>
+<div class="h-4 w-[1px] bg-slate-300 mx-1 hidden sm:block"></div>
+<div class="flex items-center space-x-1">
+<a class="px-2.5 py-1 rounded border border-transparent font-semibold text-blue-900 hover:border-[#7F9DB9] hover:bg-white/80 transition-all flex items-center space-x-1" href="#live">
+<span>🔴</span>
+<span>Live Auctions</span>
+</a>
+<a class="px-2.5 py-1 rounded border border-transparent text-slate-700 hover:border-[#7F9DB9] hover:bg-white/80 transition-all" href="#my-bids">
+            My Bids
+          </a>
+<a class="px-2.5 py-1 rounded border border-transparent text-slate-700 hover:border-[#7F9DB9] hover:bg-white/80 transition-all" href="#my-auctions">
+            My Auctions
+          </a>
+<a class="px-2.5 py-1 rounded border border-transparent text-slate-700 hover:border-[#7F9DB9] hover:bg-white/80 transition-all font-medium" href="#create">
+            + Create Auction
+          </a>
+</div>
+</div>
+<!-- User Account Section -->
+<div class="flex items-center space-x-2">
+<div class="flex items-center space-x-1 px-2 py-0.5 rounded border border-[#C5C0B0] bg-white/70">
+<!-- User Icon -->
+<svg class="w-3.5 h-3.5 text-blue-600" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" fill-rule="evenodd"></path>
+</svg>
+<span class="font-bold text-slate-800">test_user1</span>
+</div>
+<button class="px-2.5 py-0.5 rounded text-red-700 font-semibold hover:bg-red-100 hover:text-red-900 border border-transparent hover:border-red-300 transition-colors" title="Log out of Auction System">
+          Logout
+        </button>
+</div>
+</div>
+<!-- END: UserSiteNavigationStrip -->
+<!-- BEGIN: BrowserToolbarAndSearch -->
+<div class="bg-[#ECE9D8] p-3 border-b border-[#BEBAAF] space-y-2.5" data-purpose="toolbar-and-search">
+<!-- Top Action Buttons & Path -->
+<div class="flex flex-wrap items-center justify-between gap-2">
+<!-- Back / Forward Navigation Icons -->
+<div class="flex items-center space-x-1">
+<button class="xp-button-bevel px-2 py-1 rounded text-xs flex items-center space-x-1" title="Back">
+<span class="text-green-700 font-bold">←</span>
+<span class="text-slate-800 hidden sm:inline">Back</span>
+</button>
+<button class="xp-button-bevel px-2 py-1 rounded text-xs flex items-center space-x-1 opacity-70" title="Forward">
+<span class="text-green-700 font-bold">→</span>
+</button>
+<div class="h-5 w-[1px] bg-[#9E9A8E] mx-1"></div>
+<button class="xp-button-bevel px-2 py-1 rounded text-xs flex items-center space-x-1" title="Refresh Feed">
+<span class="text-blue-600 font-bold">↻</span>
+<span class="text-slate-800 hidden sm:inline">Refresh</span>
+</button>
+</div>
+<!-- Filter Tabs / Categories -->
+<div class="flex items-center space-x-1 text-xs">
+<span class="text-slate-600 font-semibold mr-1">Categories:</span>
+<button class="px-2 py-0.5 bg-white border border-[#003C74] rounded font-bold text-blue-900 shadow-sm">All</button>
+<button class="px-2 py-0.5 bg-transparent border border-transparent hover:border-[#7F9DB9] hover:bg-white/60 rounded text-slate-700">Sports</button>
+<button class="px-2 py-0.5 bg-transparent border border-transparent hover:border-[#7F9DB9] hover:bg-white/60 rounded text-slate-700">Outdoor</button>
+<button class="px-2 py-0.5 bg-transparent border border-transparent hover:border-[#7F9DB9] hover:bg-white/60 rounded text-slate-700">Electronics</button>
+<button class="px-2 py-0.5 bg-transparent border border-transparent hover:border-[#7F9DB9] hover:bg-white/60 rounded text-slate-700">Hardware</button>
+</div>
+</div>
+<!-- Hero Subhead + Intact User Search Bar -->
+<div class="bg-white/60 p-2.5 rounded border border-[#BEBAAF] flex flex-col md:flex-row md:items-center justify-between gap-3">
+<div>
+<span class="text-[10px] uppercase tracking-wider font-bold text-blue-700 block">REAL-TIME MARKETPLACE</span>
+<h1 class="text-lg font-bold text-slate-900 leading-tight">Live Auctions</h1>
+<p class="text-xs text-slate-600">Discover and bid on real-time listings with intelligent search and instant settlement.</p>
+</div>
+<!-- Classic XP Style Inset Search Bar -->
+<div class="w-full md:w-96 flex items-center">
+<div class="relative w-full">
+<input class="w-full h-8 pl-8 pr-16 text-xs bg-white border border-[#7F9DB9] rounded shadow-inner focus:outline-none focus:ring-1 focus:ring-blue-500 placeholder-slate-400" placeholder="Search auctions, items, or natural descriptions..." type="text" value=""/>
+<!-- Search Magnifying Glass Icon -->
+<div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+<svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+</div>
+<!-- Action XP Button attached to search input -->
+<button class="absolute right-0.5 top-0.5 bottom-0.5 px-3 bg-gradient-to-b from-[#F2EFE4] to-[#DBD6C4] border-l border-[#7F9DB9] text-[11px] font-bold text-slate-700 hover:bg-blue-100 flex items-center justify-center rounded-r">
+              Find
+            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- END: BrowserToolbarAndSearch -->
+<!-- BEGIN: MainContentCanvas -->
+<!-- Clean, airy white content area with gentle grey background and bevel -->
+<div class="p-4 md:p-6 bg-[#F4F4F4] min-h-[500px]" data-purpose="auction-grid-container">
+<!-- Auction Card Grid (3 Columns Desktop, 2 Tablet, 1 Mobile) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" data-purpose="auction-listings">
+<!-- CARD 1: Carbon Fiber Tennis Racquet -->
+<article class="bg-white rounded border border-[#7F9DB9] shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between overflow-hidden">
+<div class="p-4">
+<!-- Item Header -->
+<div class="flex items-start justify-between border-b border-slate-100 pb-2 mb-2.5">
+<h2 class="text-sm font-bold text-slate-900 hover:text-blue-700 cursor-pointer">Carbon Fiber Tennis Racquet</h2>
+<span class="text-[10px] px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded border border-blue-200">Sports</span>
+</div>
+<p class="text-xs text-slate-600 leading-relaxed mb-4 min-h-[38px]">
+              Professional grade lightweight tennis racquet, 98 sq inch head size. Excellent power and spin control for baseline players.
+            </p>
+<!-- Auction Parameters Table -->
+<div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded p-2.5 space-y-1.5 text-xs">
+<div class="flex justify-between items-center">
+<span class="text-slate-500 font-medium">Current Bid:</span>
+<span class="font-bold text-emerald-700 text-sm">$0.00</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-slate-500">Seller:</span>
+<span class="font-mono text-slate-700 font-medium">alice_seller</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-slate-500">Total Bids:</span>
+<span class="font-semibold text-slate-800">0</span>
+</div>
+<div class="flex justify-between items-center pt-1 border-t border-slate-200/60">
+<span class="text-slate-500">Time Left:</span>
+<span class="font-bold text-red-600 flex items-center space-x-1">
+<span>⏱</span>
+<span>123h 32m</span>
+</span>
+</div>
+</div>
+</div>
+<!-- Bottom Action Bevel Button -->
+<div class="px-4 pb-3.5 pt-1">
+<button class="w-full xp-green-action text-white text-xs font-bold py-1.5 px-3 rounded tracking-wide transition-all" data-purpose="bid-button">
+              View Details &amp; Bid
+            </button>
+</div>
+</article>
+<!-- CARD 2: 4-Person Camping Tent -->
+<article class="bg-white rounded border border-[#7F9DB9] shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between overflow-hidden">
+<div class="p-4">
+<!-- Item Header -->
+<div class="flex items-start justify-between border-b border-slate-100 pb-2 mb-2.5">
+<h2 class="text-sm font-bold text-slate-900 hover:text-blue-700 cursor-pointer">4-Person Camping Tent</h2>
+<span class="text-[10px] px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-200">Outdoor</span>
+</div>
+<p class="text-xs text-slate-600 leading-relaxed mb-4 min-h-[38px]">
+              Waterproof three-season dome tent with rainfly and fiberglass poles. Sets up in 10 minutes.
+            </p>
+<!-- Auction Parameters Table -->
+<div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded p-2.5 space-y-1.5 text-xs">
+<div class="flex justify-between items-center">
+<span class="text-slate-500 font-medium">Current Bid:</span>
+<span class="font-bold text-emerald-700 text-sm">$0.00</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-slate-500">Seller:</span>
+<span class="font-mono text-slate-700 font-medium">charlie_both</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-slate-500">Total Bids:</span>
+<span class="font-semibold text-slate-800">0</span>
+</div>
+<div class="flex justify-between items-center pt-1 border-t border-slate-200/60">
+<span class="text-slate-500">Time Left:</span>
+<span class="font-bold text-red-600 flex items-center space-x-1">
+<span>⏱</span>
+<span>123h 32m</span>
+</span>
+</div>
+</div>
+</div>
+<!-- Bottom Action Bevel Button -->
+<div class="px-4 pb-3.5 pt-1">
+<button class="w-full xp-green-action text-white text-xs font-bold py-1.5 px-3 rounded tracking-wide transition-all" data-purpose="bid-button">
+              View Details &amp; Bid
+            </button>
+</div>
+</article>
+<!-- CARD 3: Adjustable Kettlebell -->
+<article class="bg-white rounded border border-[#7F9DB9] shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between overflow-hidden">
+<div class="p-4">
+<!-- Item Header -->
+<div class="flex items-start justify-between border-b border-slate-100 pb-2 mb-2.5">
+<h2 class="text-sm font-bold text-slate-900 hover:text-blue-700 cursor-pointer">Adjustable Kettlebell</h2>
+<span class="text-[10px] px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded border border-blue-200">Fitness</span>
+</div>
+<p class="text-xs text-slate-600 leading-relaxed mb-4 min-h-[38px]">
+              Space-saving home gym equipment. Adjusts from 10 to 40 lbs with a simple dial mechanism.
+            </p>
+<!-- Auction Parameters Table -->
+<div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded p-2.5 space-y-1.5 text-xs">
+<div class="flex justify-between items-center">
+<span class="text-slate-500 font-medium">Current Bid:</span>
+<span class="font-bold text-emerald-700 text-sm">$0.00</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-slate-500">Seller:</span>
+<span class="font-mono text-slate-700 font-medium">alice_seller</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-slate-500">Total Bids:</span>
+<span class="font-semibold text-slate-800">0</span>
+</div>
+<div class="flex justify-between items-center pt-1 border-t border-slate-200/60">
+<span class="text-slate-500">Time Left:</span>
+<span class="font-bold text-red-600 flex items-center space-x-1">
+<span>⏱</span>
+<span>123h 32m</span>
+</span>
+</div>
+</div>
+</div>
+<!-- Bottom Action Bevel Button -->
+<div class="px-4 pb-3.5 pt-1">
+<button class="w-full xp-green-action text-white text-xs font-bold py-1.5 px-3 rounded tracking-wide transition-all" data-purpose="bid-button">
+              View Details &amp; Bid
+            </button>
+</div>
+</article>
+<!-- CARD 4: Mechanical Gaming Keyboard -->
+<article class="bg-white rounded border border-[#7F9DB9] shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between overflow-hidden">
+<div class="p-4">
+<!-- Item Header -->
+<div class="flex items-start justify-between border-b border-slate-100 pb-2 mb-2.5">
+<h2 class="text-sm font-bold text-slate-900 hover:text-blue-700 cursor-pointer">Mechanical Gaming Keyboard</h2>
+<span class="text-[10px] px-1.5 py-0.5 bg-purple-50 text-purple-700 rounded border border-purple-200">Hardware</span>
+</div>
+<p class="text-xs text-slate-600 leading-relaxed mb-4 min-h-[38px]">
+              RGB backlit wired keyboard with Cherry MX Red linear switches and macro keys. Aircraft-grade aluminum frame.
+            </p>
+<!-- Auction Parameters Table -->
+<div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded p-2.5 space-y-1.5 text-xs">
+<div class="flex justify-between items-center">
+<span class="text-slate-500 font-medium">Current Bid:</span>
+<span class="font-bold text-emerald-700 text-sm">$0.00</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-slate-500">Seller:</span>
+<span class="font-mono text-slate-700 font-medium">alice_seller</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-slate-500">Total Bids:</span>
+<span class="font-semibold text-slate-800">0</span>
+</div>
+<div class="flex justify-between items-center pt-1 border-t border-slate-200/60">
+<span class="text-slate-500">Time Left:</span>
+<span class="font-bold text-red-600 flex items-center space-x-1">
+<span>⏱</span>
+<span>123h 32m</span>
+</span>
+</div>
+</div>
+</div>
+<!-- Bottom Action Bevel Button -->
+<div class="px-4 pb-3.5 pt-1">
+<button class="w-full xp-green-action text-white text-xs font-bold py-1.5 px-3 rounded tracking-wide transition-all" data-purpose="bid-button">
+              View Details &amp; Bid
+            </button>
+</div>
+</article>
+<!-- CARD 5: Noise-Cancelling Earbuds -->
+<article class="bg-white rounded border border-[#7F9DB9] shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between overflow-hidden">
+<div class="p-4">
+<!-- Item Header -->
+<div class="flex items-start justify-between border-b border-slate-100 pb-2 mb-2.5">
+<h2 class="text-sm font-bold text-slate-900 hover:text-blue-700 cursor-pointer">Noise-Cancelling Earbuds</h2>
+<span class="text-[10px] px-1.5 py-0.5 bg-indigo-50 text-indigo-700 rounded border border-indigo-200">Audio</span>
+</div>
+<p class="text-xs text-slate-600 leading-relaxed mb-4 min-h-[38px]">
+              True wireless in-ear headphones with active noise cancellation, transparency mode, and 24-hour battery case.
+            </p>
+<!-- Auction Parameters Table -->
+<div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded p-2.5 space-y-1.5 text-xs">
+<div class="flex justify-between items-center">
+<span class="text-slate-500 font-medium">Current Bid:</span>
+<span class="font-bold text-emerald-700 text-sm">$0.00</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-slate-500">Seller:</span>
+<span class="font-mono text-slate-700 font-medium">charlie_both</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-slate-500">Total Bids:</span>
+<span class="font-semibold text-slate-800">0</span>
+</div>
+<div class="flex justify-between items-center pt-1 border-t border-slate-200/60">
+<span class="text-slate-500">Time Left:</span>
+<span class="font-bold text-red-600 flex items-center space-x-1">
+<span>⏱</span>
+<span>123h 32m</span>
+</span>
+</div>
+</div>
+</div>
+<!-- Bottom Action Bevel Button -->
+<div class="px-4 pb-3.5 pt-1">
+<button class="w-full xp-green-action text-white text-xs font-bold py-1.5 px-3 rounded tracking-wide transition-all" data-purpose="bid-button">
+              View Details &amp; Bid
+            </button>
+</div>
+</article>
+<!-- CARD 6: 4K Mirrorless Camera -->
+<article class="bg-white rounded border border-[#7F9DB9] shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between overflow-hidden">
+<div class="p-4">
+<!-- Item Header -->
+<div class="flex items-start justify-between border-b border-slate-100 pb-2 mb-2.5">
+<h2 class="text-sm font-bold text-slate-900 hover:text-blue-700 cursor-pointer">4K Mirrorless Camera</h2>
+<span class="text-[10px] px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded border border-amber-200">Optics</span>
+</div>
+<p class="text-xs text-slate-600 leading-relaxed mb-4 min-h-[38px]">
+              24.2 MP full-frame sensor camera body. Incredible low-light performance and 10-bit video capabilities.
+            </p>
+<!-- Auction Parameters Table -->
+<div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded p-2.5 space-y-1.5 text-xs">
+<div class="flex justify-between items-center">
+<span class="text-slate-500 font-medium">Current Bid:</span>
+<span class="font-bold text-emerald-700 text-sm">$0.00</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-slate-500">Seller:</span>
+<span class="font-mono text-slate-700 font-medium">alice_seller</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-slate-500">Total Bids:</span>
+<span class="font-semibold text-slate-800">0</span>
+</div>
+<div class="flex justify-between items-center pt-1 border-t border-slate-200/60">
+<span class="text-slate-500">Time Left:</span>
+<span class="font-bold text-red-600 flex items-center space-x-1">
+<span>⏱</span>
+<span>123h 32m</span>
+</span>
+</div>
+</div>
+</div>
+<!-- Bottom Action Bevel Button -->
+<div class="px-4 pb-3.5 pt-1">
+<button class="w-full xp-green-action text-white text-xs font-bold py-1.5 px-3 rounded tracking-wide transition-all" data-purpose="bid-button">
+              View Details &amp; Bid
+            </button>
+</div>
+</article>
+</div>
+<!-- END: Auction Card Grid -->
+</div>
+<!-- END: MainContentCanvas -->
+<!-- BEGIN: StatusBar -->
+<footer class="bg-[#ECE9D8] px-2 py-1 border-t border-[#D4D0C8] flex flex-wrap items-center justify-between text-[11px] text-slate-700 select-none" data-purpose="xp-status-bar">
+<!-- Status Messages -->
+<div class="flex items-center space-x-2">
+<div class="xp-status-cell px-2 py-0.5 bg-[#ECE9D8]">
+<span class="font-medium text-slate-800">Status:</span> Ready
+        </div>
+<div class="xp-status-cell px-2 py-0.5 bg-[#ECE9D8] hidden sm:block">
+          Connected to Auction Server (127.0.0.1:8080)
+        </div>
+<div class="xp-status-cell px-2 py-0.5 bg-[#ECE9D8]">
+          6 Active Items
+        </div>
+</div>
+<!-- Security / Zone Panel -->
+<div class="flex items-center space-x-2 mt-1 sm:mt-0">
+<div class="xp-status-cell px-2 py-0.5 bg-[#ECE9D8] flex items-center space-x-1.5">
+<!-- Zone Icon -->
+<svg class="w-3 h-3 text-blue-600" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 10-2 0v3a1 1 0 102 0V7z" fill-rule="evenodd"></path>
+</svg>
+<span>Local Intranet | Protected Mode: Off</span>
+</div>
+</div>
+</footer>
+<!-- END: StatusBar -->
+</main>
+<!-- END: MainWindowWrapper -->
+</body></html>

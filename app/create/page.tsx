@@ -16,7 +16,10 @@ export default async function CreateAuctionPage() {
     'SELECT category_id, category_name FROM CATEGORIES ORDER BY category_name ASC'
   );
   
-  const categories = result.rows;
+  const categories = result.rows.map((row) => ({
+    category_id: String(row.category_id),
+    category_name: row.category_name,
+  }));
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

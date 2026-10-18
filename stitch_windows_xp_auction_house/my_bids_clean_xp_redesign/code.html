@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WinAuction XP - My Bids &amp; Active Watchlist</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- BEGIN: Custom Styles -->
+<style data-purpose="xp-theme-core">
+    body {
+      background-color: #004e98;
+      background: radial-gradient(circle at 50% 20%, #3a6ea5 0%, #004e98 100%);
+      font-family: 'Tahoma', 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    /* Classic Windows XP Luna Title Bar Gradient */
+    .xp-titlebar {
+      background: linear-gradient(180deg, #0058ee 0%, #3593ff 4%, #288eff 18%, #1268ee 44%, #0053ee 50%, #0046d5 54%, #0053ee 100%);
+      text-shadow: 1px 1px 1px #0f3871;
+    }
+
+    /* Windows XP Classic Window Borders */
+    .xp-window {
+      box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.45), 0 0 0 1px #0831d9;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+
+    /* Inset bevel frame */
+    .xp-inset-box {
+      border: 1px solid #7f9db9;
+      background-color: #ffffff;
+      box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Classic Windows XP Button styling */
+    .xp-button {
+      background: linear-gradient(180deg, #ffffff 0%, #ece9d8 45%, #d8d4c4 50%, #f1efe2 100%);
+      border: 1px solid #003c74;
+      border-radius: 3px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 1px 1px rgba(0,0,0,0.15);
+      color: #000000;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.08s ease;
+    }
+
+    .xp-button:hover {
+      background: linear-gradient(180deg, #fffbc8 0%, #fced98 45%, #f7dc53 50%, #fff0a5 100%);
+      border-color: #e59700;
+      box-shadow: 0 0 3px #ffb700;
+    }
+
+    .xp-button:active {
+      background: linear-gradient(180deg, #ded8c0 0%, #c5be9e 50%, #dfd8be 100%);
+      box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3);
+      padding-top: 4px;
+      padding-bottom: 2px;
+    }
+
+    /* Pressed button state for active tabs/nav */
+    .xp-button-active {
+      background: linear-gradient(180deg, #b8cde3 0%, #d5e5f5 50%, #cee1f2 100%) !important;
+      border-color: #316ac5 !important;
+      box-shadow: inset 1px 1px 2px rgba(0, 48, 120, 0.35) !important;
+      font-weight: bold;
+      color: #002266 !important;
+    }
+
+    /* XP Title Bar Window Controls */
+    .xp-btn-ctrl {
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 1px 1px rgba(0,0,0,0.3);
+      border: 1px solid #ffffff;
+      border-radius: 3px;
+    }
+
+    .xp-btn-close {
+      background: linear-gradient(180deg, #e78873 0%, #d84729 45%, #bf2d10 50%, #e06d54 100%);
+    }
+
+    .xp-btn-close:hover {
+      background: linear-gradient(180deg, #ff9e87 0%, #ea4c2a 50%, #ff795d 100%);
+    }
+
+    .xp-btn-min-max {
+      background: linear-gradient(180deg, #5394f7 0%, #2e6adb 45%, #1852c4 50%, #468bf2 100%);
+    }
+
+    .xp-btn-min-max:hover {
+      background: linear-gradient(180deg, #6ba5ff 0%, #3d79eb 50%, #5d9aff 100%);
+    }
+
+    /* XP Tab bar */
+    .xp-tab {
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+      border: 1px solid #919b9c;
+      border-bottom: none;
+      background: linear-gradient(180deg, #f5f4ef 0%, #dedcd1 100%);
+      color: #333;
+      padding: 4px 12px;
+      font-size: 11px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .xp-tab.active {
+      background: #ffffff;
+      font-weight: bold;
+      border-bottom: 1px solid #ffffff;
+      margin-bottom: -1px;
+      padding-top: 5px;
+      color: #000;
+      z-index: 10;
+    }
+  </style>
+<style data-purpose="xp-status-and-details">
+    /* Classic Status Bar Segment */
+    .xp-status-bar {
+      background-color: #ece9d8;
+      border-top: 1px solid #a09f98;
+    }
+
+    .xp-status-cell {
+      border-right: 1px solid #aca899;
+      box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #fff;
+      font-size: 11px;
+      color: #2b2b2b;
+      padding: 2px 8px;
+    }
+
+    /* Groupbox border */
+    .xp-groupbox {
+      border: 1px solid #d0d0bf;
+      border-radius: 4px;
+      position: relative;
+      padding-top: 14px;
+    }
+
+    .xp-groupbox-legend {
+      position: absolute;
+      top: -9px;
+      left: 12px;
+      background-color: #ffffff;
+      padding: 0 6px;
+      font-size: 11px;
+      font-weight: bold;
+      color: #003399;
+    }
+  </style>
+<!-- END: Custom Styles -->
+</head>
+<body class="min-h-screen flex items-center justify-center p-3 sm:p-6 text-gray-900 antialiased">
+<!-- BEGIN: XP Application Window Frame -->
+<main class="w-full max-w-5xl xp-window bg-[#ece9d8] flex flex-col overflow-hidden text-[12px] shadow-2xl" data-purpose="desktop-window-container">
+<!-- BEGIN: Luna Titlebar -->
+<header class="xp-titlebar text-white px-2 py-1 flex items-center justify-between select-none" data-purpose="window-titlebar">
+<!-- Title & Program Icon -->
+<div class="flex items-center space-x-2">
+<div class="w-4 h-4 rounded-sm bg-gradient-to-br from-amber-300 to-amber-600 flex items-center justify-center shadow-inner border border-amber-800">
+<svg class="w-3 h-3 text-white drop-shadow" fill="currentColor" viewbox="0 0 20 20">
+<path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+</svg>
+</div>
+<span class="font-bold text-xs tracking-wide antialiased drop-shadow">WinAuction XP - My Bids &amp; Active Watchlist</span>
+</div>
+<!-- Window Control Buttons (Minimize, Maximize, Close) -->
+<div class="flex items-center space-x-1">
+<button aria-label="Minimize" class="xp-btn-ctrl xp-btn-min-max w-[21px] h-[21px] flex items-center justify-center text-white text-[10px] font-bold pb-1 leading-none active:scale-95" type="button">_</button>
+<button aria-label="Maximize" class="xp-btn-ctrl xp-btn-min-max w-[21px] h-[21px] flex items-center justify-center text-white text-[10px] font-bold active:scale-95" type="button">
+<span class="w-2.5 h-2.5 border border-white block"></span>
+</button>
+<button aria-label="Close" class="xp-btn-ctrl xp-btn-close w-[21px] h-[21px] flex items-center justify-center text-white font-bold text-xs leading-none active:scale-95" type="button">✕</button>
+</div>
+</header>
+<!-- END: Luna Titlebar -->
+<!-- BEGIN: System Menu Bar -->
+<nav class="bg-[#ece9d8] border-b border-[#aca899] px-2 py-0.5 flex space-x-3 text-[11px] text-gray-800" data-purpose="standard-menu-bar">
+<span class="hover:bg-[#316ac5] hover:text-white px-1.5 py-0.5 rounded cursor-pointer"><span class="underline">F</span>ile</span>
+<span class="hover:bg-[#316ac5] hover:text-white px-1.5 py-0.5 rounded cursor-pointer"><span class="underline">E</span>dit</span>
+<span class="hover:bg-[#316ac5] hover:text-white px-1.5 py-0.5 rounded cursor-pointer"><span class="underline">V</span>iew</span>
+<span class="hover:bg-[#316ac5] hover:text-white px-1.5 py-0.5 rounded cursor-pointer">Fa<span class="underline">v</span>orites</span>
+<span class="hover:bg-[#316ac5] hover:text-white px-1.5 py-0.5 rounded cursor-pointer"><span class="underline">T</span>ools</span>
+<span class="hover:bg-[#316ac5] hover:text-white px-1.5 py-0.5 rounded cursor-pointer"><span class="underline">H</span>elp</span>
+</nav>
+<!-- END: System Menu Bar -->
+<!-- BEGIN: Application Navigation Bar -->
+<section class="bg-[#f0ede0] border-b border-[#c8c4b7] px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 shadow-sm" data-purpose="app-sub-navigation">
+<div class="flex items-center space-x-1.5">
+<button class="xp-button" type="button">
+<svg class="w-3.5 h-3.5 text-blue-700" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Live Auctions</span>
+</button>
+<!-- Active Pressed Button: My Bids -->
+<button aria-current="page" class="xp-button xp-button-active" type="button">
+<svg class="w-3.5 h-3.5 text-blue-900" fill="currentColor" viewbox="0 0 20 20">
+<path d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z"></path>
+</svg>
+<span>My Bids</span>
+</button>
+<button class="xp-button" type="button">
+<svg class="w-3.5 h-3.5 text-amber-700" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>My Auctions</span>
+</button>
+<button class="xp-button" type="button">
+<svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Create Auction</span>
+</button>
+</div>
+<!-- User Profile & Session Controls -->
+<div class="flex items-center space-x-2 text-[11px]">
+<div class="flex items-center space-x-1.5 px-2 py-0.5 bg-white border border-[#919b9c] rounded-sm">
+<span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+<span class="text-gray-600">Logged in as:</span>
+<span class="font-bold text-blue-900">test_user1</span>
+</div>
+<button class="xp-button text-red-700 font-semibold hover:text-red-800" type="button">
+<svg class="w-3 h-3 text-red-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Logout</span>
+</button>
+</div>
+</section>
+<!-- END: Application Navigation Bar -->
+<!-- BEGIN: Main Content Area -->
+<div class="p-3 bg-[#ece9d8] flex-1 flex flex-col space-y-3" data-purpose="main-stage">
+<!-- View Heading Section -->
+<div class="bg-gradient-to-r from-white via-white to-[#ece9d8] border border-[#a29e92] p-2.5 rounded-sm flex items-center justify-between" data-purpose="content-header">
+<div>
+<h1 class="text-base font-bold text-[#003399] tracking-tight">My Bids</h1>
+<p class="text-[11px] text-gray-600">Track your active bids, winning positions, and past auction outcomes.</p>
+</div>
+<button class="xp-button px-3 py-1 font-semibold text-blue-950" type="button">
+<svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Explore Auctions</span>
+</button>
+</div>
+<!-- Segment Tabs -->
+<div class="flex items-end space-x-1 border-b border-[#919b9c] px-2 pt-1" data-purpose="filter-tabs">
+<button class="xp-tab active" type="button">Active Bids (0)</button>
+<button class="xp-tab" type="button">Winning (0)</button>
+<button class="xp-tab" type="button">Outbid (0)</button>
+<button class="xp-tab" type="button">Bid History (0)</button>
+</div>
+<!-- Primary White Canvas Frame with Empty State -->
+<div class="xp-inset-box p-6 rounded-b flex flex-col items-center justify-center min-h-[240px] text-center" data-purpose="empty-state-container">
+<!-- Classic XP Empty / Folder Icon -->
+<div class="mb-3 relative" data-purpose="xp-folder-icon">
+<!-- Folder graphic crafted with CSS / SVG -->
+<div class="w-16 h-16 rounded-md bg-gradient-to-b from-amber-200 to-amber-400 border border-amber-600 flex items-center justify-center shadow-md relative mx-auto">
+<!-- Folder tab -->
+<div class="absolute -top-1.5 left-2 w-6 h-2 bg-amber-300 border-t border-l border-r border-amber-600 rounded-t-sm"></div>
+<!-- Search glass overlay -->
+<div class="w-8 h-8 rounded-full bg-blue-100 border border-blue-400 flex items-center justify-center shadow-inner">
+<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.5 10.5a7.5 7.5 0 0013.15 6.15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- Empty State Title and Message from User Screenshot -->
+<h2 class="text-sm font-bold text-gray-800 mb-1">No bids placed yet</h2>
+<p class="text-[11px] text-gray-600 max-w-sm mb-4 leading-relaxed">
+          You haven't bid on any items yet. Find an auction you like and place your first bid!
+        </p>
+<!-- Primary Action Button Styled as Authentic XP Luna Action -->
+<button class="xp-button text-xs font-bold text-blue-900 px-5 py-1.5 shadow" type="button">
+<svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+<span>Browse Active Auctions</span>
+</button>
+</div>
+<!-- Recommended Quick-Start Auction Cards -->
+<div class="xp-groupbox bg-white px-3 pb-3" data-purpose="recommended-auctions-strip">
+<div class="xp-groupbox-legend flex items-center space-x-1">
+<span>Featured Live Auctions Ready for Bidding</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 mt-1 text-[11px]">
+<!-- Card 1 -->
+<div class="border border-[#c0c8d0] rounded p-2 bg-[#fbfbf9] hover:border-[#316ac5] transition-colors flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div>
+<span class="inline-block bg-blue-100 text-blue-800 text-[10px] px-1 rounded border border-blue-200 font-semibold mb-1">Sports</span>
+<h3 class="font-bold text-gray-800 line-clamp-1">Carbon Fiber Tennis Racquet</h3>
+<p class="text-gray-500 text-[10px]">Condition: Brand New (Mint)</p>
+</div>
+<span class="text-emerald-700 font-bold text-xs">$85.00</span>
+</div>
+<div class="mt-2.5 flex items-center justify-between border-t border-gray-200 pt-1.5 text-[10px] text-gray-600">
+<span>⏳ 02h 14m left</span>
+<button class="xp-button text-[10px] py-0.5 px-2" type="button">Bid Now</button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="border border-[#c0c8d0] rounded p-2 bg-[#fbfbf9] hover:border-[#316ac5] transition-colors flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div>
+<span class="inline-block bg-amber-100 text-amber-800 text-[10px] px-1 rounded border border-amber-200 font-semibold mb-1">Hardware</span>
+<h3 class="font-bold text-gray-800 line-clamp-1">Mechanical Gaming Keyboard</h3>
+<p class="text-gray-500 text-[10px]">RGB Backlit • Cherry MX Blue</p>
+</div>
+<span class="text-emerald-700 font-bold text-xs">$42.50</span>
+</div>
+<div class="mt-2.5 flex items-center justify-between border-t border-gray-200 pt-1.5 text-[10px] text-gray-600">
+<span>⏳ 05h 48m left</span>
+<button class="xp-button text-[10px] py-0.5 px-2" type="button">Bid Now</button>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="border border-[#c0c8d0] rounded p-2 bg-[#fbfbf9] hover:border-[#316ac5] transition-colors flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div>
+<span class="inline-block bg-purple-100 text-purple-800 text-[10px] px-1 rounded border border-purple-200 font-semibold mb-1">Electronics</span>
+<h3 class="font-bold text-gray-800 line-clamp-1">4K Mirrorless Digital Camera</h3>
+<p class="text-gray-500 text-[10px]">24.2 MP • 16-50mm Kit Lens</p>
+</div>
+<span class="text-emerald-700 font-bold text-xs">$310.00</span>
+</div>
+<div class="mt-2.5 flex items-center justify-between border-t border-gray-200 pt-1.5 text-[10px] text-gray-600">
+<span>⏳ 01h 05m left</span>
+<button class="xp-button text-[10px] py-0.5 px-2" type="button">Bid Now</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- END: Main Content Area -->
+<!-- BEGIN: XP Status Bar -->
+<footer class="xp-status-bar flex items-center text-[11px] select-none" data-purpose="system-status-bar">
+<!-- Status pane 1 -->
+<div class="xp-status-cell flex-1 flex items-center space-x-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-600 border border-emerald-800 shadow-sm inline-block"></span>
+<span>Ready</span>
+</div>
+<!-- Status pane 2 -->
+<div class="xp-status-cell w-36 hidden sm:block">
+<span>User: <strong>test_user1</strong></span>
+</div>
+<!-- Status pane 3 -->
+<div class="xp-status-cell w-32 flex items-center space-x-1">
+<svg class="w-3 h-3 text-blue-600" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" fill-rule="evenodd"></path>
+</svg>
+<span>Local Intranet</span>
+</div>
+<!-- Status pane 4 -->
+<div class="xp-status-cell w-20 text-right pr-2">
+<span>100%</span>
+</div>
+</footer>
+<!-- END: XP Status Bar -->
+</main>
+<!-- END: XP Application Window Frame -->
+</body></html>

@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache';
 /**
  * Update Reserve Price for an active, extended, or draft auction owned by the seller.
  */
-export async function updateReservePrice(auctionId: number, reservePrice: number) {
+export async function updateReservePrice(auctionId: string | number, reservePrice: number) {
   const sellerId = await getSessionUserId();
   if (!sellerId) {
     return { error: 'You must be logged in to manage this auction.' };
@@ -48,7 +48,7 @@ export async function updateReservePrice(auctionId: number, reservePrice: number
  * 2. Calls stored procedure close_expired_auction(p_auction_id)
  * Executed safely inside a transaction.
  */
-export async function endAuctionEarly(auctionId: number) {
+export async function endAuctionEarly(auctionId: string | number) {
   const sellerId = await getSessionUserId();
   if (!sellerId) {
     return { error: 'You must be logged in to manage this auction.' };
@@ -100,7 +100,7 @@ export async function endAuctionEarly(auctionId: number) {
  * Cancel Auction:
  * Sets auction status to 'CANCELLED' if currently DRAFT, ACTIVE, or EXTENDED.
  */
-export async function cancelAuction(auctionId: number) {
+export async function cancelAuction(auctionId: string | number) {
   const sellerId = await getSessionUserId();
   if (!sellerId) {
     return { error: 'You must be logged in to manage this auction.' };

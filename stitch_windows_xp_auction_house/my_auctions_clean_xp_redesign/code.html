@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AuctionSystem - [WinAuction XP: My Auctions &amp; Seller Management]</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-lowest": "#ffffff",
+            "surface": "#fdfae8",
+            "tertiary-container": "#915500",
+            "outline-variant": "#c3c5d8",
+            "on-tertiary": "#ffffff",
+            "on-surface": "#1c1c12",
+            "surface-tint": "#0051e0",
+            "surface-container-highest": "#e6e3d2",
+            "surface-bright": "#fdfae8",
+            "error": "#ba1a1a",
+            "surface-variant": "#e6e3d2",
+            "on-surface-variant": "#434655",
+            "primary-fixed-dim": "#b5c4ff",
+            "on-background": "#1c1c12",
+            "error-container": "#ffdad6",
+            "primary-fixed": "#dbe1ff",
+            "on-primary-fixed": "#00164d",
+            "outline": "#737687",
+            "on-error": "#ffffff",
+            "tertiary-fixed-dim": "#ffb86f",
+            "primary": "#0040b5",
+            "on-primary": "#ffffff",
+            "tertiary": "#704000",
+            "on-primary-fixed-variant": "#003cac",
+            "tertiary-fixed": "#ffdcbd",
+            "surface-container-low": "#f7f4e3",
+            "on-secondary-fixed-variant": "#005312",
+            "inverse-primary": "#b5c4ff",
+            "surface-dim": "#dddaca",
+            "primary-container": "#0055ea",
+            "inverse-surface": "#313126",
+            "surface-container": "#f1eedd",
+            "secondary-fixed": "#9df898",
+            "background": "#fdfae8",
+            "on-secondary-container": "#1a7425",
+            "on-secondary": "#ffffff",
+            "on-tertiary-fixed": "#2c1600",
+            "on-tertiary-fixed-variant": "#693c00",
+            "on-secondary-fixed": "#002204",
+            "secondary-container": "#9df898",
+            "secondary": "#106d20",
+            "on-primary-container": "#d8dfff",
+            "surface-container-high": "#ece9d8",
+            "secondary-fixed-dim": "#82db7e",
+            "on-tertiary-container": "#ffdab8",
+            "on-error-container": "#93000a",
+            "inverse-on-surface": "#f4f1e0"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-md": "0.5rem",
+            "space-lg": "0.75rem",
+            "space-sm": "0.25rem",
+            "gutter": "0.5rem",
+            "space-xs": "0.125rem",
+            "space-xl": "1rem",
+            "margin": "0.75rem"
+          },
+          "fontFamily": {
+            "label-sm": ["Work Sans"],
+            "label-md": ["Work Sans"],
+            "headline-md": ["Work Sans"],
+            "title-md": ["Work Sans"],
+            "headline-lg": ["Work Sans"],
+            "body-sm": ["Work Sans"],
+            "headline-sm": ["Work Sans"],
+            "body-lg": ["Work Sans"],
+            "label-lg": ["Work Sans"],
+            "body-md": ["Work Sans"]
+          },
+          "fontSize": {
+            "label-sm": ["10px", { "lineHeight": "12px", "letterSpacing": "0.2px", "fontWeight": "400" }],
+            "label-md": ["11px", { "lineHeight": "14px", "fontWeight": "600" }],
+            "headline-md": ["18px", { "lineHeight": "24px", "fontWeight": "700" }],
+            "title-md": ["13px", { "lineHeight": "16px", "fontWeight": "700" }],
+            "headline-lg": ["22px", { "lineHeight": "28px", "fontWeight": "700" }],
+            "body-sm": ["11px", { "lineHeight": "14px", "fontWeight": "400" }],
+            "headline-sm": ["15px", { "lineHeight": "20px", "fontWeight": "600" }],
+            "body-lg": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "label-lg": ["12px", { "lineHeight": "16px", "fontWeight": "700" }],
+            "body-md": ["12px", { "lineHeight": "16px", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    /* Skeuomorphic Luna Blue & Bevel Presets */
+    .xp-title-gradient {
+      background: linear-gradient(180deg, #0a64e8 0%, #0053ea 12%, #0043c7 48%, #0050e5 52%, #106bf4 92%, #0a40a8 100%);
+    }
+    .xp-window-chassis {
+      border: 3px solid #0055ea;
+      box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.28);
+    }
+    .xp-bevel-outset {
+      border-top: 1px solid #ffffff;
+      border-left: 1px solid #ffffff;
+      border-right: 1px solid #737687;
+      border-bottom: 1px solid #737687;
+    }
+    .xp-bevel-outset:active {
+      border-top: 1px solid #737687;
+      border-left: 1px solid #737687;
+      border-right: 1px solid #ffffff;
+      border-bottom: 1px solid #ffffff;
+    }
+    .xp-bevel-inset {
+      border-top: 1px solid #737687;
+      border-left: 1px solid #737687;
+      border-right: 1px solid #ffffff;
+      border-bottom: 1px solid #ffffff;
+    }
+    .xp-group-box {
+      border: 1px solid #c3c5d8;
+      position: relative;
+    }
+    .xp-group-box-title {
+      position: absolute;
+      top: -9px;
+      left: 10px;
+      background: #ece9d8;
+      padding: 0 6px;
+    }
+    .xp-tab-active {
+      border-top: 2px solid #ff9900;
+      border-left: 1px solid #737687;
+      border-right: 1px solid #737687;
+      border-bottom: 1px solid #ece9d8;
+      background-color: #ece9d8;
+      position: relative;
+      margin-bottom: -1px;
+    }
+    .xp-tab-inactive {
+      border-top: 1px solid #c3c5d8;
+      border-left: 1px solid #c3c5d8;
+      border-right: 1px solid #737687;
+      border-bottom: 1px solid #737687;
+      background-color: #dddaca;
+    }
+    .xp-btn-start {
+      background: linear-gradient(180deg, #4caf50 0%, #2e7d32 100%);
+      border-top: 1px solid #81c784;
+      border-left: 1px solid #81c784;
+      border-right: 1px solid #1b5e20;
+      border-bottom: 1px solid #1b5e20;
+    }
+    .xp-btn-start:active {
+      border-top: 1px solid #1b5e20;
+      border-left: 1px solid #1b5e20;
+      border-right: 1px solid #81c784;
+      border-bottom: 1px solid #81c784;
+    }
+    .xp-sys-btn {
+      width: 21px;
+      height: 21px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 3px;
+      border-top: 1px solid rgba(255, 255, 255, 0.7);
+      border-left: 1px solid rgba(255, 255, 255, 0.7);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+      border-right: 1px solid rgba(0, 0, 0, 0.4);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface h-full flex flex-col p-2 md:p-4 select-none overflow-x-hidden font-body-md text-body-md">
+<!-- Main Window Frame (Luna Chassis) -->
+<div class="flex-1 flex flex-col bg-surface-container-high rounded-t-lg xp-window-chassis max-w-7xl mx-auto w-full overflow-hidden">
+<!-- Title Bar -->
+<header class="xp-title-gradient px-space-md py-1 flex items-center justify-between text-on-primary">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-white text-[16px]">gavel</span>
+<span class="font-title-md text-title-md tracking-tight drop-shadow-sm font-bold">AuctionSystem - [WinAuction XP: My Auctions &amp; Seller Management]</span>
+</div>
+<!-- Window Controls -->
+<div class="flex items-center space-x-1">
+<button class="xp-sys-btn bg-primary hover:brightness-110 active:brightness-90 text-white font-bold" title="Minimize">
+<span class="text-[10px] leading-none mb-1 font-bold">_</span>
+</button>
+<button class="xp-sys-btn bg-primary hover:brightness-110 active:brightness-90 text-white font-bold" title="Maximize">
+<span class="text-[10px] leading-none font-bold">□</span>
+</button>
+<button class="xp-sys-btn bg-[#d83b01] hover:bg-[#e81123] active:brightness-90 text-white font-bold" title="Close">
+<span class="text-[11px] leading-none font-bold">✕</span>
+</button>
+</div>
+</header>
+<!-- Top Menu Bar (Shared Component Anchors) -->
+<nav class="w-full flex items-center px-space-sm py-0.5 bg-surface-container-high border-b border-outline text-label-sm font-label-sm space-x-0.5">
+<span class="px-2 py-0.5 hover:bg-primary-fixed hover:text-on-primary-fixed cursor-pointer">File</span>
+<span class="px-2 py-0.5 hover:bg-primary-fixed hover:text-on-primary-fixed cursor-pointer">Edit</span>
+<span class="px-2 py-0.5 hover:bg-primary-fixed hover:text-on-primary-fixed cursor-pointer">View</span>
+<span class="px-2 py-0.5 hover:bg-primary-fixed hover:text-on-primary-fixed cursor-pointer">Favorites</span>
+<span class="px-2 py-0.5 hover:bg-primary-fixed hover:text-on-primary-fixed cursor-pointer">Tools</span>
+<span class="px-2 py-0.5 hover:bg-primary-fixed hover:text-on-primary-fixed cursor-pointer">Help</span>
+</nav>
+<!-- Sub-navigation Bar -->
+<div class="flex flex-wrap items-center justify-between px-space-md py-1 bg-surface-container border-b border-outline">
+<div class="flex items-center space-x-1">
+<a class="px-2.5 py-1 text-on-surface hover:bg-primary-fixed hover:text-on-primary-fixed rounded-DEFAULT text-label-md font-label-md flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[14px]">stream</span> Live Auctions
+        </a>
+<a class="px-2.5 py-1 text-on-surface hover:bg-primary-fixed hover:text-on-primary-fixed rounded-DEFAULT text-label-md font-label-md flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[14px]">gavel</span> My Bids
+        </a>
+<!-- Active: My Auctions -->
+<a class="px-2.5 py-1 text-on-primary bg-primary font-bold rounded-DEFAULT text-label-md font-label-md flex items-center gap-1 shadow-sm" href="#">
+<span class="material-symbols-outlined text-[14px]">inventory_2</span> My Auctions
+        </a>
+<a class="px-2.5 py-1 text-on-surface hover:bg-primary-fixed hover:text-on-primary-fixed rounded-DEFAULT text-label-md font-label-md flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[14px]">add_box</span> Create Auction
+        </a>
+</div>
+<div class="flex items-center space-x-3 text-label-md font-label-md">
+<div class="flex items-center gap-1 text-on-surface-variant bg-surface-container-low px-2 py-0.5 border border-outline rounded-DEFAULT">
+<span class="material-symbols-outlined text-secondary text-[14px]" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+<span>Logged in as:</span>
+<span class="font-bold text-primary">test_user1</span>
+</div>
+<a class="text-error hover:underline flex items-center gap-0.5" href="#">
+<span class="material-symbols-outlined text-[14px]">logout</span> Logout
+        </a>
+</div>
+</div>
+<!-- Top Action / Command Toolbar -->
+<div class="flex flex-wrap items-center justify-between px-space-md py-1.5 bg-surface-container-high border-b border-outline gap-2">
+<div class="flex items-center space-x-1.5">
+<!-- New Listing Action Button (Start Button Green Hue) -->
+<button class="xp-btn-start text-white text-label-md font-label-md px-3 py-1 rounded-DEFAULT flex items-center gap-1.5 font-bold shadow-sm">
+<span class="material-symbols-outlined text-[16px]">add_circle</span>
+          + New Listing
+        </button>
+<button class="xp-bevel-outset bg-surface-container-high px-2.5 py-1 text-label-md font-label-md text-on-surface hover:bg-surface-container flex items-center gap-1 rounded-DEFAULT">
+<span class="material-symbols-outlined text-[15px] text-error">cancel</span>
+          End Early
+        </button>
+<button class="xp-bevel-outset bg-surface-container-high px-2.5 py-1 text-label-md font-label-md text-on-surface hover:bg-surface-container flex items-center gap-1 rounded-DEFAULT">
+<span class="material-symbols-outlined text-[15px] text-on-surface-variant">print</span>
+          Print Summary
+        </button>
+<button class="xp-bevel-outset bg-surface-container-high px-2.5 py-1 text-label-md font-label-md text-on-surface hover:bg-surface-container flex items-center gap-1 rounded-DEFAULT">
+<span class="material-symbols-outlined text-[15px] text-primary">refresh</span>
+          Refresh Stats
+        </button>
+</div>
+<!-- Quick Search Sunken Input -->
+<div class="flex items-center space-x-1">
+<label class="text-label-sm font-label-sm text-on-surface-variant" for="search-input">Quick Search:</label>
+<div class="relative flex items-center">
+<input class="xp-bevel-inset bg-surface-container-lowest text-body-sm font-body-sm px-2 py-0.5 w-48 text-on-surface outline-none focus:bg-surface-bright" id="search-input" placeholder="Search my listings..." type="text"/>
+<button class="xp-bevel-outset bg-surface-container px-1.5 py-0.5 ml-1 text-label-sm font-label-sm flex items-center" title="Search">
+<span class="material-symbols-outlined text-[13px]">search</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Main Workspace Content (Clean, Uncluttered, Plentiful Whitespace) -->
+<main class="flex-1 p-space-lg flex flex-col space-y-space-lg bg-surface-container-high overflow-y-auto">
+<!-- 1. Top KPI Summary Cards (Clean XP Group Boxes) -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-lg">
+<!-- KPI 1: Active Listings -->
+<div class="xp-group-box pt-3 pb-2 px-3 bg-surface-container-high rounded-DEFAULT">
+<span class="xp-group-box-title text-label-md font-label-md text-primary font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">sell</span> Active Listings
+          </span>
+<div class="flex items-center justify-between mt-1">
+<span class="text-headline-md font-headline-md text-on-surface">3 Active</span>
+<span class="xp-bevel-inset bg-surface-container-lowest px-1.5 py-0.5 text-label-sm font-label-sm text-secondary font-bold">Current</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-0.5">All 3 lots currently accepting bids.</p>
+</div>
+<!-- KPI 2: Total Bids -->
+<div class="xp-group-box pt-3 pb-2 px-3 bg-surface-container-high rounded-DEFAULT">
+<span class="xp-group-box-title text-label-md font-label-md text-primary font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">forum</span> Total Bids
+          </span>
+<div class="flex items-center justify-between mt-1">
+<span class="text-headline-md font-headline-md text-on-surface">24 Bids</span>
+<span class="xp-bevel-inset bg-surface-container-lowest px-1.5 py-0.5 text-label-sm font-label-sm text-primary font-bold">+6 Today</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-0.5">Across active seller inventory.</p>
+</div>
+<!-- KPI 3: Total Revenue -->
+<div class="xp-group-box pt-3 pb-2 px-3 bg-surface-container-high rounded-DEFAULT">
+<span class="xp-group-box-title text-label-md font-label-md text-primary font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">payments</span> Total Revenue
+          </span>
+<div class="flex items-center justify-between mt-1">
+<span class="text-headline-md font-headline-md text-secondary font-bold">$850.00 USD</span>
+<span class="xp-bevel-inset bg-surface-container-lowest px-1.5 py-0.5 text-label-sm font-label-sm text-on-surface-variant">Cleared</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-0.5">Settled via escrow system.</p>
+</div>
+<!-- KPI 4: Seller Status -->
+<div class="xp-group-box pt-3 pb-2 px-3 bg-surface-container-high rounded-DEFAULT">
+<span class="xp-group-box-title text-label-md font-label-md text-primary font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified</span> Seller Status
+          </span>
+<div class="flex items-center justify-between mt-1">
+<span class="text-headline-md font-headline-md text-on-surface">Good Standing</span>
+<span class="material-symbols-outlined text-secondary text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<p class="text-body-sm font-body-sm text-secondary font-bold mt-0.5">100% Positive Feedback (48)</p>
+</div>
+</section>
+<!-- 2. Filter Tabs & Listing Section -->
+<section class="flex-1 flex flex-col">
+<!-- Tabs Header Row -->
+<div class="flex items-end space-x-1 pl-2 border-b border-outline">
+<button class="xp-tab-active px-3 py-1 text-label-md font-label-md text-on-surface font-bold rounded-t-DEFAULT shadow-xs">
+            Active Listings (3)
+          </button>
+<button class="xp-tab-inactive px-3 py-1 text-label-md font-label-md text-on-surface-variant hover:text-on-surface rounded-t-DEFAULT">
+            Drafts (1)
+          </button>
+<button class="xp-tab-inactive px-3 py-1 text-label-md font-label-md text-on-surface-variant hover:text-on-surface rounded-t-DEFAULT">
+            Completed (12)
+          </button>
+<button class="xp-tab-inactive px-3 py-1 text-label-md font-label-md text-on-surface-variant hover:text-on-surface rounded-t-DEFAULT">
+            Unsold (0)
+          </button>
+</div>
+<!-- 3. Clean Table / List of Seller's Listings (Inset Viewport) -->
+<div class="flex-1 bg-surface-container-lowest xp-bevel-inset overflow-x-auto min-h-[220px]">
+<table class="w-full border-collapse text-left">
+<thead>
+<tr class="bg-surface-container-high select-none sticky top-0 z-10 border-b border-outline">
+<th class="xp-bevel-outset px-3 py-1.5 text-label-md font-label-md text-on-surface font-bold">
+<div class="flex items-center justify-between">
+<span>Item</span>
+<span class="material-symbols-outlined text-[12px]">arrow_drop_down</span>
+</div>
+</th>
+<th class="xp-bevel-outset px-3 py-1.5 text-label-md font-label-md text-on-surface font-bold">Category</th>
+<th class="xp-bevel-outset px-3 py-1.5 text-label-md font-label-md text-on-surface font-bold text-right">Start Price</th>
+<th class="xp-bevel-outset px-3 py-1.5 text-label-md font-label-md text-on-surface font-bold text-right">Current Bid</th>
+<th class="xp-bevel-outset px-3 py-1.5 text-label-md font-label-md text-on-surface font-bold text-center">Bids</th>
+<th class="xp-bevel-outset px-3 py-1.5 text-label-md font-label-md text-on-surface font-bold">Time Left</th>
+<th class="xp-bevel-outset px-3 py-1.5 text-label-md font-label-md text-on-surface font-bold text-center">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant font-body-sm text-body-sm">
+<!-- Row 1 -->
+<tr class="hover:bg-primary-fixed/30 bg-surface-container-lowest transition-colors">
+<td class="px-3 py-2 flex items-center space-x-2">
+<div class="w-7 h-7 xp-bevel-inset bg-surface-container-low flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-outline text-[18px]">sports_tennis</span>
+</div>
+<div>
+<span class="font-bold text-primary hover:underline cursor-pointer">Carbon Fiber Tennis Racquet</span>
+<div class="text-[10px] text-on-surface-variant font-label-sm">Lot #XP-88219 • Reserve Met: Yes</div>
+</div>
+</td>
+<td class="px-3 py-2 text-on-surface">Sports</td>
+<td class="px-3 py-2 text-right text-on-surface font-mono">$0.00</td>
+<td class="px-3 py-2 text-right text-on-surface font-mono font-bold">$0.00</td>
+<td class="px-3 py-2 text-center">
+<span class="xp-bevel-inset bg-surface-container-low px-1.5 py-0.5 rounded-DEFAULT text-on-surface-variant">0 bids</span>
+</td>
+<td class="px-3 py-2 text-on-surface font-medium flex items-center gap-1 pt-3">
+<span class="material-symbols-outlined text-[13px] text-outline">schedule</span>
+                  123h 32m
+                </td>
+<td class="px-3 py-2 text-center whitespace-nowrap">
+<div class="inline-flex space-x-1">
+<button class="xp-bevel-outset bg-surface-container px-2 py-0.5 text-label-sm font-label-sm hover:bg-surface-container-highest">Edit</button>
+<button class="xp-bevel-outset bg-surface-container px-2 py-0.5 text-label-sm font-label-sm text-error hover:bg-surface-container-highest">Cancel</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-primary-fixed/30 bg-surface-container-low/40 transition-colors">
+<td class="px-3 py-2 flex items-center space-x-2">
+<div class="w-7 h-7 xp-bevel-inset bg-surface-container-low flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-outline text-[18px]">fitness_center</span>
+</div>
+<div>
+<span class="font-bold text-primary hover:underline cursor-pointer">Adjustable Kettlebell 40lbs</span>
+<div class="text-[10px] text-on-surface-variant font-label-sm">Lot #XP-88304 • Free Local Pickup</div>
+</div>
+</td>
+<td class="px-3 py-2 text-on-surface">Fitness</td>
+<td class="px-3 py-2 text-right text-on-surface font-mono">$15.00</td>
+<td class="px-3 py-2 text-right text-secondary font-mono font-bold">$28.00</td>
+<td class="px-3 py-2 text-center">
+<span class="xp-bevel-inset bg-surface-container-lowest px-1.5 py-0.5 rounded-DEFAULT text-primary font-bold">4 bids</span>
+</td>
+<td class="px-3 py-2 text-on-surface font-medium flex items-center gap-1 pt-3">
+<span class="material-symbols-outlined text-[13px] text-outline">schedule</span>
+                  48h 10m
+                </td>
+<td class="px-3 py-2 text-center whitespace-nowrap">
+<div class="inline-flex space-x-1">
+<button class="xp-bevel-outset bg-surface-container px-2 py-0.5 text-label-sm font-label-sm hover:bg-surface-container-highest">Edit</button>
+<button class="xp-bevel-outset bg-surface-container px-2 py-0.5 text-label-sm font-label-sm text-primary font-bold hover:bg-surface-container-highest">View Bids</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 (High Velocity Watch Lot) -->
+<tr class="hover:bg-primary-fixed/30 bg-surface-container-lowest transition-colors">
+<td class="px-3 py-2 flex items-center space-x-2">
+<div class="w-7 h-7 xp-bevel-inset bg-surface-container-low flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-outline text-[18px]">watch</span>
+</div>
+<div>
+<span class="font-bold text-primary hover:underline cursor-pointer">Vintage Mechanical Diver 200M</span>
+<div class="text-[10px] text-error font-label-sm font-semibold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[11px]">local_fire_department</span> High Activity • Ending Soon
+                    </div>
+</div>
+</td>
+<td class="px-3 py-2 text-on-surface">Watches</td>
+<td class="px-3 py-2 text-right text-on-surface font-mono">$100.00</td>
+<td class="px-3 py-2 text-right text-secondary font-mono font-bold">$125.00</td>
+<td class="px-3 py-2 text-center">
+<span class="xp-bevel-inset bg-surface-container-lowest px-1.5 py-0.5 rounded-DEFAULT text-primary font-bold">14 bids</span>
+</td>
+<td class="px-3 py-2 text-error font-bold flex items-center gap-1 pt-3">
+<span class="material-symbols-outlined text-[13px] text-error">alarm</span>
+                  04h 28m
+                </td>
+<td class="px-3 py-2 text-center whitespace-nowrap">
+<div class="inline-flex space-x-1">
+<button class="xp-bevel-outset bg-surface-container px-2 py-0.5 text-label-sm font-label-sm text-primary font-bold hover:bg-surface-container-highest">View Bids</button>
+<button class="xp-bevel-outset bg-surface-container px-2 py-0.5 text-label-sm font-label-sm hover:bg-surface-container-highest">Lower Reserve</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Quick Action Strip -->
+<div class="flex items-center justify-between px-space-md py-1 bg-surface-container border-t border-outline text-label-sm font-label-sm text-on-surface-variant">
+<div>Displaying 3 of 3 Active Items</div>
+<div class="flex items-center space-x-2">
+<span>Rows per page: <strong>25</strong></span>
+<span>|</span>
+<span class="text-primary cursor-pointer hover:underline">Select All</span>
+<span>|</span>
+<span class="text-primary cursor-pointer hover:underline">Export as CSV</span>
+</div>
+</div>
+</section>
+</main>
+<!-- 4. Bottom Status Bar (XP Subdivided Recessed Bar) -->
+<footer class="w-full flex items-center justify-between px-space-md py-0.5 bg-surface-container-high border-t border-outline text-label-sm font-label-sm select-none">
+<div class="flex items-center space-x-1 overflow-x-auto">
+<div class="xp-bevel-inset px-2 py-0.5 bg-surface-container-high text-on-surface flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary inline-block"></span>
+          Ready
+        </div>
+<div class="xp-bevel-inset px-2 py-0.5 bg-surface-container-high text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] text-primary">lan</span>
+          Connected to Auction Server
+        </div>
+<div class="xp-bevel-inset px-2 py-0.5 bg-surface-container-high text-on-surface-variant">
+          3 Active Listings
+        </div>
+<div class="xp-bevel-inset px-2 py-0.5 bg-surface-container-high text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] text-secondary">lock</span>
+          SSL 128-bit Encrypted
+        </div>
+</div>
+<!-- Right Status Info -->
+<div class="hidden sm:flex items-center space-x-1">
+<div class="xp-bevel-inset px-2 py-0.5 bg-surface-container-high text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">public</span>
+          Local Intranet Zone
+        </div>
+<div class="xp-bevel-inset px-2 py-0.5 bg-surface-container-high text-on-surface font-mono">
+          12:44 PM
+        </div>
+</div>
+</footer>
+</div>
+</body></html>
