@@ -49,10 +49,15 @@ export async function GET(
          a.status,
          a.current_end_time,
          EXTRACT(EPOCH FROM (a.current_end_time - NOW())) AS seconds_remaining,
-         w.winning_username
+         w.winning_username,
+         ar.result_id,
+         pe.status AS escrow_status,
+         pe.amount_held AS escrow_amount_held
       FROM AUCTIONS a
       JOIN ITEMS i ON a.item_id = i.item_id
       JOIN USERS u ON i.seller_id = u.user_id
+      LEFT JOIN AUCTION_RESULTS ar ON ar.auction_id = a.auction_id
+      LEFT JOIN PAYMENTS_ESCROW pe ON pe.result_id = ar.result_id
       LEFT JOIN LATERAL (
         SELECT bu.username AS winning_username
         FROM BIDS b

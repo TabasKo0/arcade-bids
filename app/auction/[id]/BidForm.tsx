@@ -3,7 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import useSWR, { mutate } from 'swr';
 import CountdownTimer from '@/app/components/CountdownTimer';
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 interface BidFormProps {
   auctionId: string | number;
@@ -28,6 +31,15 @@ export default function BidForm({
 }: BidFormProps) {
   const router = useRouter();
 
+  // SWR hook for real-time auction synchronization
+  const { data: swrAuctionData, mutate: mutateAuction } = useSWR(
+    `/api/auction/${auctionId}`,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+    }
+  );
+
   // Real-time state
   const [currentHighestBid, setCurrentHighestBid] = useState<number>(
     parseFloat(String(initialHighestBid || 0))
@@ -48,7 +60,15 @@ export default function BidForm({
   const [finalOutcome, setFinalOutcome] = useState<{
     type: 'WON' | 'RESERVE_NOT_MET' | 'ENDED' | 'NO_BIDS';
     winner?: string;
-  } | null>(null);
+  } | null>(() => {
+    if (initialStatus === 'ENDED') {
+      return { type: 'WON', winner: 'Highest Bidder' };
+    }
+    if (initialStatus === 'RESERVE_NOT_MET') {
+      return { type: 'RESERVE_NOT_MET' };
+    }
+    return null;
+  });
 
   // Dynamic increment calculation (CockroachDB enforce_minimum_increment logic)
   const calculateRequiredIncrement = (baseBid: number) => {
@@ -78,39 +98,63 @@ export default function BidForm({
   const parsedInputBid = parseFloat(bidAmount);
   const isBelowMin = isNaN(parsedInputBid) || parsedInputBid < minRequiredBid;
 
-  // Handle countdown expiration
+  // Lazy settlement trigger when countdown reaches 00:00:00
   const handleCountdownExpire = async () => {
-    if (isAuctionClosed) return;
+    if (isAuctionClosed && finalOutcome) return;
 
     setIsAuctionClosed(true);
     setIsFinalizing(true);
 
-    // 2-second transition state per Requirement 3
-    setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/auction/${auctionId}`);
-        const data = await res.json();
+    try {
+      // 1. Fire POST request to /api/auction/${auctionId}/settle
+      const settleRes = await fetch(`/api/auction/${auctionId}/settle`, {
+        method: 'POST',
+      });
 
-        const highestBid = parseFloat(String(data.current_highest_bid || 0));
-        const resPrice = data.reserve_price ? parseFloat(String(data.reserve_price)) : null;
-
-        if (highestBid <= 0 || !data.winning_username) {
-          setFinalOutcome({ type: 'NO_BIDS' });
-        } else if (resPrice !== null && highestBid < resPrice) {
-          setFinalOutcome({ type: 'RESERVE_NOT_MET' });
-        } else {
-          setFinalOutcome({
-            type: 'WON',
-            winner: data.winning_username,
-          });
-        }
-      } catch (err) {
-        console.error('Settlement fetch error:', err);
-      } finally {
-        setIsFinalizing(false);
+      if (!settleRes.ok) {
+        console.warn('Settlement API response status:', settleRes.status);
       }
-    }, 2000);
+
+      // 2. Execute mutate() call to SWR to re-fetch the auction data
+      const fresh = await mutateAuction();
+      await mutate(`/api/auction/${auctionId}`);
+
+      const data = fresh || (await fetch(`/api/auction/${auctionId}`).then((r) => r.json()));
+      const highestBid = parseFloat(String(data?.current_highest_bid || 0));
+      const resPrice = data?.reserve_price ? parseFloat(String(data.reserve_price)) : null;
+
+      if (data?.status === 'RESERVE_NOT_MET' || (resPrice !== null && highestBid < resPrice)) {
+        setFinalOutcome({ type: 'RESERVE_NOT_MET' });
+      } else if (highestBid > 0 && data?.winning_username) {
+        setFinalOutcome({
+          type: 'WON',
+          winner: data.winning_username,
+        });
+      } else {
+        setFinalOutcome({ type: 'NO_BIDS' });
+      }
+
+      if (data?.status) {
+        setStatus(data.status);
+      }
+    } catch (err) {
+      console.error('Lazy settlement execution error:', err);
+    } finally {
+      setIsFinalizing(false);
+      router.refresh();
+    }
   };
+
+  // Trigger lazy settlement on mount if already past expiration time but not yet settled
+  useEffect(() => {
+    if (
+      (initialStatus === 'ACTIVE' || initialStatus === 'EXTENDED') &&
+      new Date(initialEndTime).getTime() <= Date.now() &&
+      !finalOutcome
+    ) {
+      handleCountdownExpire();
+    }
+  }, []);
 
   // Submit bid
   const handleSubmit = async (e: React.FormEvent) => {
@@ -222,14 +266,30 @@ export default function BidForm({
       {!isFinalizing && finalOutcome && (
         <div className="space-y-4">
           {finalOutcome.type === 'WON' && (
-            <div className="p-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl shadow-md text-center space-y-2">
-              <span className="text-3xl block">🏆</span>
-              <h4 className="text-lg font-bold tracking-tight">
-                Auction Won by {finalOutcome.winner || 'Highest Bidder'}!
-              </h4>
-              <p className="text-xs text-emerald-100 font-medium">
-                Reserve price was satisfied. Proceeding to Escrow settlement.
-              </p>
+            <div className="p-6 bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-2xl shadow-lg text-center space-y-3 animate-fade-in">
+              <span className="text-4xl block">🏆</span>
+              <div>
+                <h4 className="text-xl font-extrabold tracking-tight">
+                  Auction Won by {finalOutcome.winner || 'Highest Bidder'}!
+                </h4>
+                <p className="text-xs text-emerald-100 font-medium mt-1">
+                  Reserve price was satisfied. Point settlement completed and held in Escrow.
+                </p>
+              </div>
+              <div className="pt-2 flex flex-wrap justify-center items-center gap-3">
+                <Link
+                  href="/profile/receipts"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-emerald-800 hover:bg-emerald-50 rounded-xl text-xs font-bold shadow-xs transition-transform hover:scale-105"
+                >
+                  <span>🧾</span> View Payment Receipt
+                </Link>
+                <Link
+                  href="/my-bids"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-800/80 hover:bg-emerald-800 text-white rounded-xl text-xs font-semibold border border-emerald-400/50 shadow-xs transition-colors"
+                >
+                  <span>🔒</span> Escrow Protected
+                </Link>
+              </div>
             </div>
           )}
 

@@ -43,7 +43,44 @@ export default async function AuctionPage({ params }: { params: Promise<{ id: st
     notFound();
   }
 
-  const auction = result.rows[0];
+  let auction = result.rows[0];
+
+  // Lazy settlement: if auction time has expired but status is still ACTIVE/EXTENDED, settle atomically
+  if (
+    parseFloat(String(auction.seconds_remaining || 0)) <= 0 &&
+    (auction.status === 'ACTIVE' || auction.status === 'EXTENDED')
+  ) {
+    try {
+      await pool.query('CALL close_expired_auction($1);', [auctionId]);
+      const refreshed = await pool.query(
+        `SELECT 
+           a.auction_id,
+           i.item_id,
+           i.seller_id,
+           i.title,
+           i.description,
+           u.username AS seller_username,
+           a.starting_price,
+           a.reserve_price,
+           a.current_highest_bid,
+           a.total_bids,
+           a.status,
+           a.current_end_time,
+           EXTRACT(EPOCH FROM (a.current_end_time - NOW())) AS seconds_remaining
+         FROM AUCTIONS a
+         JOIN ITEMS i ON a.item_id = i.item_id
+         JOIN USERS u ON i.seller_id = u.user_id
+         WHERE a.auction_id = $1`,
+        [auctionId]
+      );
+      if (refreshed.rows.length > 0) {
+        auction = refreshed.rows[0];
+      }
+    } catch (settleErr) {
+      console.warn('Lazy settlement on page load notice:', settleErr);
+    }
+  }
+
   const isSeller = userId !== null && String(userId) === String(auction.seller_id);
   const currentBid = auction.current_highest_bid || auction.starting_price;
 

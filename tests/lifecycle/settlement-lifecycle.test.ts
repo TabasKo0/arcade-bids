@@ -326,4 +326,118 @@ describe('Category 4 & 5: Settlement, Escrow, and Core Lifecycle Flows', () => {
       client.release();
     }
   });
+
+  // TC-LAZY-SETTLE-01: Lazy settlement API endpoint validation and atomic procedure execution
+  it('TC-LAZY-SETTLE-01: POST /api/auction/[id]/settle validates expiration, settles atomically, and handles idempotency', async () => {
+    const client = await pool.connect();
+    try {
+      // Fetch a valid category
+      const catRes = await client.query('SELECT category_id FROM CATEGORIES LIMIT 1');
+      const categoryId = catRes.rows[0].category_id;
+
+      // 1. Create an active unexpired auction (future end time)
+      const unexpItem = await client.query(
+        'INSERT INTO ITEMS (seller_id, category_id, title, description) VALUES ($1, $2, $3, $4) RETURNING item_id',
+        [seedData.sellerId, categoryId, 'Unexpired Watch', 'Luxury watch not yet ended']
+      );
+      const unexpItemId = unexpItem.rows[0].item_id;
+
+      const unexpAuc = await client.query(
+        `INSERT INTO AUCTIONS 
+          (item_id, starting_price, reserve_price, status, start_time, base_end_time, current_end_time)
+         VALUES 
+          ($1, 100.00, 200.00, 'ACTIVE', NOW(), NOW() + INTERVAL '2 hours', NOW() + INTERVAL '2 hours')
+         RETURNING auction_id`,
+        [unexpItemId]
+      );
+      const unexpAucId = String(unexpAuc.rows[0].auction_id);
+
+      // Attempt to settle unexpired auction -> expect 400 Bad Request
+      const prematureRes = await fetch(`${BASE_URL}/api/auction/${unexpAucId}/settle`, {
+        method: 'POST',
+      });
+      expect(prematureRes.status).toBe(400);
+      const prematureData = await prematureRes.json();
+      expect(prematureData.error).toContain('not expired yet');
+
+      // 2. Create an expired auction with a winning bid exceeding reserve
+      const expItem = await client.query(
+        'INSERT INTO ITEMS (seller_id, category_id, title, description) VALUES ($1, $2, $3, $4) RETURNING item_id',
+        [seedData.sellerId, categoryId, 'Expired Vintage Camera', 'Ended auction ready for lazy settlement']
+      );
+      const expItemId = expItem.rows[0].item_id;
+
+      const expAuc = await client.query(
+        `INSERT INTO AUCTIONS 
+          (item_id, starting_price, reserve_price, status, start_time, base_end_time, current_end_time)
+         VALUES 
+          ($1, 50.00, 100.00, 'ACTIVE', NOW() - INTERVAL '3 hours', NOW() + INTERVAL '1 hour', NOW() + INTERVAL '1 hour')
+         RETURNING auction_id`,
+        [expItemId]
+      );
+      const expAucId = String(expAuc.rows[0].auction_id);
+
+      // Buyer places winning bid of $120.00 while active
+      await client.query(
+        `INSERT INTO BIDS (auction_id, bidder_id, bid_amount, bid_time)
+         VALUES ($1, $2, 120.00, NOW() - INTERVAL '1 minute')`,
+        [expAucId, seedData.buyerId]
+      );
+      await client.query(
+        'UPDATE AUCTIONS SET current_highest_bid = 120.00, total_bids = 1 WHERE auction_id = $1',
+        [expAucId]
+      );
+
+      // Fast-forward auction time to past to trigger expiration
+      await client.query(
+        "UPDATE AUCTIONS SET current_end_time = NOW() - INTERVAL '10 seconds' WHERE auction_id = $1",
+        [expAucId]
+      );
+
+      // Record pre-settlement balances
+      const buyerPre = await client.query('SELECT wallet_balance FROM USERS WHERE user_id = $1', [seedData.buyerId]);
+      const sellerPre = await client.query('SELECT wallet_balance FROM USERS WHERE user_id = $1', [seedData.sellerId]);
+      const initialBuyerBal = parseFloat(String(buyerPre.rows[0].wallet_balance));
+      const initialSellerBal = parseFloat(String(sellerPre.rows[0].wallet_balance));
+
+      // 3. Fire lazy settlement via POST /api/auction/[id]/settle
+      const settleRes = await fetch(`${BASE_URL}/api/auction/${expAucId}/settle`, {
+        method: 'POST',
+      });
+      expect(settleRes.status).toBe(200);
+      const settleData = await settleRes.json();
+      expect(settleData.settled).toBe(true);
+
+      // Verify database state: auction ended
+      const aucCheck = await client.query('SELECT status FROM AUCTIONS WHERE auction_id = $1', [expAucId]);
+      expect(aucCheck.rows[0].status).toBe('ENDED');
+
+      // Verify atomic wallet transfer
+      const buyerPost = await client.query('SELECT wallet_balance FROM USERS WHERE user_id = $1', [seedData.buyerId]);
+      const sellerPost = await client.query('SELECT wallet_balance FROM USERS WHERE user_id = $1', [seedData.sellerId]);
+      expect(parseFloat(String(buyerPost.rows[0].wallet_balance))).toBe(initialBuyerBal - 120.00);
+      expect(parseFloat(String(sellerPost.rows[0].wallet_balance))).toBe(initialSellerBal + 120.00);
+
+      // Verify receipt was generated
+      const receiptCheck = await client.query('SELECT * FROM RECEIPTS WHERE auction_id = $1', [expAucId]);
+      expect(receiptCheck.rows.length).toBe(1);
+      expect(parseFloat(String(receiptCheck.rows[0].amount_paid))).toBe(120.00);
+
+      // 4. Test idempotency: Calling /settle again on already settled auction returns 200 OK
+      const alreadySettledRes = await fetch(`${BASE_URL}/api/auction/${expAucId}/settle`, {
+        method: 'POST',
+      });
+      expect(alreadySettledRes.status).toBe(200);
+      const alreadySettledData = await alreadySettledRes.json();
+      expect(alreadySettledData.settled).toBe(true);
+
+      // 5. Non-existent auction returns 404
+      const notFoundRes = await fetch(`${BASE_URL}/api/auction/99999999999/settle`, {
+        method: 'POST',
+      });
+      expect(notFoundRes.status).toBe(404);
+    } finally {
+      client.release();
+    }
+  });
 });
