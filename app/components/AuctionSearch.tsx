@@ -265,7 +265,7 @@ export default function AuctionSearch({
                 ? parseFloat(String(auction.distance))
                 : null;
             const isTopMatch =
-              distanceNum !== null && !isNaN(distanceNum) && distanceNum < 0.3;
+              distanceNum !== null && !isNaN(distanceNum) && distanceNum < 0.45;
             const sprite = getCategorySprite(
               auction.category,
               auction.title,

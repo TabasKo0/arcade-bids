@@ -4,6 +4,7 @@ import pool from '@/lib/db';
 import { getSessionUserId } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 
 export async function updateProfile(state: any, formData: FormData) {
   const userId = await getSessionUserId();
@@ -23,6 +24,7 @@ export async function updateProfile(state: any, formData: FormData) {
       'UPDATE USERS SET username = $1, email = $2 WHERE user_id = $3',
       [username, email, userId]
     );
+    revalidatePath('/', 'layout');
     return { success: true };
   } catch (error: any) {
     console.error('Update profile error:', error);

@@ -119,6 +119,9 @@ export default function BidForm({
       const fresh = await mutateAuction();
       await mutate(`/api/auction/${auctionId}`);
 
+      // Retain the finalizing arcade state briefly for smooth transition UX
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
       const data = fresh || (await fetch(`/api/auction/${auctionId}`).then((r) => r.json()));
       const highestBid = parseFloat(String(data?.current_highest_bid || 0));
       const resPrice = data?.reserve_price ? parseFloat(String(data.reserve_price)) : null;
