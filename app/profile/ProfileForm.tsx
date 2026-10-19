@@ -2,96 +2,164 @@
 
 import { useActionState, useState } from 'react';
 import { updateProfile, deleteAccount } from '@/app/actions/profile';
+import { PixelSprite } from '@/lib/sprites';
 
-export default function ProfileForm({ initialUsername, initialEmail }: { initialUsername: string, initialEmail: string }) {
+export default function ProfileForm({
+  initialUsername,
+  initialEmail,
+}: {
+  initialUsername: string;
+  initialEmail: string;
+}) {
   const [state, formAction, isPending] = useActionState(updateProfile, null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   return (
-    <div className="space-y-8">
-      <form action={formAction as unknown as (payload: FormData) => void} className="space-y-6">
-        <div>
-          <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
-          <input
-            type="text"
-            name="username"
-            id="username"
-            defaultValue={initialUsername}
-            required
-            className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2 dark:bg-gray-700 dark:text-white"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email Address</label>
-          <input
-            type="email"
-            name="email"
-            id="email"
-            defaultValue={initialEmail}
-            required
-            className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2 dark:bg-gray-700 dark:text-white"
-          />
-        </div>
-
-        {state?.error && (
-          <div className="text-red-500 text-sm bg-red-50 dark:bg-red-900/30 p-2 rounded border border-red-200 dark:border-red-800">
-            {state.error}
+    <div style={{ display: 'grid', gap: 28 }}>
+      {/* Edit Profile Panel */}
+      <section className="panel pad">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+          <PixelSprite name="gavel" size={24} />
+          <div>
+            <div className="eyebrow">ACCOUNT SETTINGS</div>
+            <h2 className="h2" style={{ fontSize: 18, margin: 0, color: 'var(--gold)' }}>
+              PLAYER CREDENTIALS
+            </h2>
           </div>
-        )}
-        
-        {state?.success && (
-          <div className="text-green-600 text-sm bg-green-50 dark:bg-green-900/30 p-2 rounded border border-green-200 dark:border-green-800">
-            Profile updated successfully.
-          </div>
-        )}
-
-        <div>
-          <button
-            type="submit"
-            disabled={isPending}
-            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-          >
-            {isPending ? 'Saving...' : 'Save Changes'}
-          </button>
         </div>
-      </form>
 
-      <div className="border-t border-gray-200 dark:border-gray-700 pt-8 mt-8">
-        <h3 className="text-lg font-medium text-red-600 mb-4">Danger Zone</h3>
+        <form action={formAction as unknown as (payload: FormData) => void} style={{ display: 'grid', gap: 18 }}>
+          <div>
+            <label htmlFor="username" className="lbl">
+              PLAYER CALLSIGN / USERNAME
+            </label>
+            <input
+              type="text"
+              name="username"
+              id="username"
+              defaultValue={initialUsername}
+              required
+              className="field"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="email" className="lbl">
+              COMM CHANNEL / EMAIL ADDRESS
+            </label>
+            <input
+              type="email"
+              name="email"
+              id="email"
+              defaultValue={initialEmail}
+              required
+              className="field"
+            />
+          </div>
+
+          {state?.error && (
+            <div className="err" role="alert">
+              <span style={{ fontFamily: 'var(--f-display)', fontSize: 10, display: 'block', marginBottom: 4 }}>
+                [ERROR_RESPONSE]
+              </span>
+              {state.error}
+            </div>
+          )}
+
+          {state?.success && (
+            <div
+              style={{
+                background: 'rgba(93, 242, 138, 0.15)',
+                borderLeft: '8px solid var(--lime)',
+                padding: '10px 14px',
+                color: 'var(--limeL)',
+              }}
+            >
+              <span style={{ fontFamily: 'var(--f-display)', fontSize: 10, display: 'block', marginBottom: 4 }}>
+                [SUCCESS]
+              </span>
+              Player profile updated successfully.
+            </div>
+          )}
+
+          <div style={{ marginTop: 8 }}>
+            <button
+              type="submit"
+              disabled={isPending}
+              className="btn lime"
+              style={{ minWidth: 200 }}
+            >
+              {isPending ? (
+                'COMMITTING CHANGES...'
+              ) : (
+                <>
+                  <PixelSprite name="bolt" size={16} />
+                  <span>SAVE CHANGES</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      {/* Danger Zone Panel */}
+      <section className="panel pad rose">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+          <PixelSprite name="shield" size={24} />
+          <div>
+            <div className="eyebrow" style={{ color: 'var(--roseL)' }}>DANGER ZONE</div>
+            <h2 className="h2" style={{ fontSize: 18, margin: 0, color: 'var(--rose)' }}>
+              TERMINATE ACCOUNT
+            </h2>
+          </div>
+        </div>
+
+        <p className="sub" style={{ fontSize: 18, marginBottom: 18, color: 'var(--cream)' }}>
+          Permanently delete your player profile and revoke database privileges. Active bids and auctions will be locked.
+        </p>
+
         {!showDeleteConfirm ? (
           <button
             type="button"
             onClick={() => setShowDeleteConfirm(true)}
-            className="inline-flex justify-center py-2 px-4 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-gray-800 dark:border-red-800 dark:text-red-400 dark:hover:bg-gray-700"
+            className="btn sm rose"
           >
-            Delete Account
+            DELETE PLAYER ACCOUNT
           </button>
         ) : (
-          <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-md border border-red-200 dark:border-red-800">
-            <p className="text-sm text-red-800 dark:text-red-400 mb-4">
-              Are you sure you want to delete your account? This action cannot be undone and will anonymize all your data.
+          <div
+            style={{
+              background: '#2b0c1b',
+              border: '2px dashed var(--rose)',
+              padding: '18px',
+              display: 'grid',
+              gap: 14,
+            }}
+          >
+            <p style={{ color: 'var(--roseL)', fontSize: 20, margin: 0 }}>
+              WARNING: Are you sure you want to permanently delete your account? This action cannot be reversed.
             </p>
-            <div className="flex space-x-4">
-              <form action={async () => { await deleteAccount(); }}>
-                <button
-                  type="submit"
-                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                >
-                  Yes, Delete My Account
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <form
+                action={async () => {
+                  await deleteAccount();
+                }}
+              >
+                <button type="submit" className="btn sm rose">
+                  CONFIRM: PERMANENTLY DELETE
                 </button>
               </form>
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(false)}
-                className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                className="btn sm ghost"
               >
-                Cancel
+                CANCEL
               </button>
             </div>
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

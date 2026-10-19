@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useTransition, useCallback } from 'react';
+import { useState, useEffect, useTransition, useCallback, useMemo } from 'react';
 import Link from 'next/link';
+import { PixelSprite, getCategorySprite } from '@/lib/sprites';
 
 export interface AuctionItem {
   auction_id: number;
@@ -15,14 +16,39 @@ export interface AuctionItem {
   current_end_time?: string;
   seconds_remaining?: number;
   distance?: number | string | null;
+  category?: string;
 }
 
-export default function AuctionSearch({ initialAuctions = [] }: { initialAuctions?: AuctionItem[] }) {
+const CATEGORIES = [
+  'ALL',
+  'Electronics',
+  'Gaming',
+  'Audio',
+  'Sports',
+  'Outdoors',
+  'Fitness',
+  'Collectibles',
+];
+
+export default function AuctionSearch({
+  initialAuctions = [],
+}: {
+  initialAuctions?: AuctionItem[];
+}) {
   const [query, setQuery] = useState('');
+  const [selectedCat, setSelectedCat] = useState('ALL');
+  const [sortBy, setSortBy] = useState('ending');
   const [auctions, setAuctions] = useState<AuctionItem[]>(initialAuctions);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(6);
+  const [, startTransition] = useTransition();
+
+  // Reset pagination whenever search, filter, or page-size changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, selectedCat, sortBy, pageSize]);
 
   // Unified debounced fetch against /api/search?q={query}
   const fetchSearchResults = useCallback(async (searchQuery: string) => {
@@ -72,184 +98,334 @@ export default function AuctionSearch({ initialAuctions = [] }: { initialAuction
     fetchSearchResults('');
   };
 
-  return (
-    <div className="space-y-8">
-      {/* Unified Search Input */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-4 transition-all">
-        <form onSubmit={handleSubmit} className="relative">
-          <div className="relative flex items-center">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </div>
+  // Client-side filtering & sorting
+  const processedAuctions = useMemo(() => {
+    let list = [...auctions];
 
+    // Filter by category
+    if (selectedCat !== 'ALL') {
+      const matchCat = selectedCat.toLowerCase();
+      list = list.filter((a) => {
+        const text = `${a.title} ${a.description} ${a.category || ''}`.toLowerCase();
+        return text.includes(matchCat);
+      });
+    }
+
+    // Sort
+    list.sort((a, b) => {
+      const priceA = parseFloat(String(a.current_highest_bid || a.starting_price || 0));
+      const priceB = parseFloat(String(b.current_highest_bid || b.starting_price || 0));
+
+      if (sortBy === 'price-lo') return priceA - priceB;
+      if (sortBy === 'price-hi') return priceB - priceA;
+      if (sortBy === 'bids') return (b.total_bids || 0) - (a.total_bids || 0);
+      return (a.seconds_remaining || 0) - (b.seconds_remaining || 0);
+    });
+
+    return list;
+  }, [auctions, selectedCat, sortBy]);
+
+  const totalItems = processedAuctions.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safePage = Math.min(Math.max(1, currentPage), totalPages);
+
+  // Paginated slice
+  const paginatedAuctions = useMemo(() => {
+    const startIdx = (safePage - 1) * pageSize;
+    return processedAuctions.slice(startIdx, startIdx + pageSize);
+  }, [processedAuctions, safePage, pageSize]);
+
+  const handlePageChange = (newPage: number) => {
+    const targetPage = Math.min(Math.max(1, newPage), totalPages);
+    setCurrentPage(targetPage);
+    if (typeof window !== 'undefined') {
+      const gridElement = document.getElementById('auction-marketplace-grid');
+      if (gridElement) {
+        gridElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Arcade Search Panel */}
+      <section className="panel searchbox">
+        <form onSubmit={handleSubmit}>
+          <div className="flex items-center gap-3 w-full">
+            <div className="flex-none flex items-center justify-center">
+              <PixelSprite name="lens" size={26} />
+            </div>
             <input
-              type="text"
+              type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search auctions, items, or natural descriptions..."
-              className="w-full pl-11 pr-24 py-3 bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              placeholder="Search auctions or natural descriptions (e.g. 'wireless headphones')..."
+              className="field flex-1 min-w-0 !m-0"
             />
-
-            <div className="absolute inset-y-0 right-0 flex items-center pr-2 gap-1.5">
-              {query && (
-                <button
-                  type="button"
-                  onClick={handleClear}
-                  className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg transition-colors cursor-pointer"
-                  title="Clear search"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-              {isLoading && (
-                <div className="pr-3 text-blue-500 animate-spin">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                </div>
-              )}
-            </div>
+            {query && (
+              <button
+                type="button"
+                onClick={handleClear}
+                className="btn ghost sm flex-none whitespace-nowrap !mb-0"
+                title="Clear query"
+              >
+                CLEAR
+              </button>
+            )}
+            <button type="submit" className="btn sky sm flex-none whitespace-nowrap !mb-0">
+              {isLoading ? 'SCANNING...' : 'SEARCH'}
+            </button>
           </div>
         </form>
-      </div>
 
-      {/* Results Grid */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 animate-pulse space-y-4"
+        {/* Filter Chips */}
+        <div className="filters">
+          <span className="lbl" style={{ margin: '0 4px 0 0', alignSelf: 'center' }}>CATEGORY:</span>
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              className={`chipb ${selectedCat === cat ? 'active' : ''}`}
+              aria-pressed={selectedCat === cat}
+              onClick={() => setSelectedCat(cat)}
             >
-              <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-              <div className="h-4 bg-gray-100 dark:bg-gray-700/50 rounded w-full"></div>
-              <div className="h-4 bg-gray-100 dark:bg-gray-700/50 rounded w-2/3"></div>
-              <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded mt-4"></div>
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Results Metadata & Sort Dropdown */}
+        <div className="flex items-center justify-between gap-4 flex-wrap mt-4 pt-3.5 border-t border-[rgba(184,171,230,0.15)]">
+          <div className="meta" style={{ margin: 0 }}>
+            {totalItems} {totalItems === 1 ? 'LISTING' : 'LISTINGS'}
+            {totalPages > 1 ? ` · PAGE ${safePage} OF ${totalPages}` : ''}
+            {hasSearched ? ` · SEMANTIC MATCH ON "${query.toUpperCase()}"` : ''} ·{' '}
+            {auctions.length} LIVE IN DATABASE
+          </div>
+
+          <div className="sortwrap" style={{ margin: 0 }}>
+            <label htmlFor="sortSelect" className="lbl">
+              SORT:
+            </label>
+            <select
+              id="sortSelect"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="field sm"
+              style={{ minWidth: 170 }}
+            >
+              <option value="ending">Ending Soon</option>
+              <option value="price-lo">Price: Low to High</option>
+              <option value="price-hi">Price: High to Low</option>
+              <option value="bids">Most Bids</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      {/* Grid or Empty State */}
+      {isLoading ? (
+        <div className="auction-grid">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="panel card opacity-60 animate-pulse">
+              <div className="card-body">
+                <div className="h-5 bg-[var(--ink3)] rounded w-3/4 mb-3" />
+                <div className="h-4 bg-[var(--ink3)] rounded w-full mb-2" />
+                <div className="h-4 bg-[var(--ink3)] rounded w-2/3 mb-6" />
+                <div className="h-10 bg-[var(--edge)] rounded" />
+              </div>
             </div>
           ))}
         </div>
-      ) : auctions.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center max-w-xl mx-auto">
-          <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 dark:bg-gray-700/60 rounded-2xl flex items-center justify-center text-gray-500 dark:text-gray-400">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-            {hasSearched ? 'No matching auctions found' : 'No active auctions right now'}
-          </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+      ) : processedAuctions.length === 0 ? (
+        <section className="panel empty-state py-16 px-6 flex flex-col items-center text-center gap-4">
+          <PixelSprite name="lens" size={64} />
+          <h2 className="text-lg sm:text-xl font-['Press_Start_2P'] text-[var(--cream)] m-0">
+            {hasSearched ? 'Nothing Matches That Query' : 'No Active Auctions Right Now'}
+          </h2>
+          <p className="text-[var(--dim)] max-w-lg m-0 text-base leading-relaxed">
             {hasSearched
-              ? 'Try using different keywords or clearing your search.'
-              : 'Check back soon for new live listings.'}
+              ? 'Try fewer keywords or describe the item naturally. Vector search understands concepts like "outdoor gear" or "mechanical keyboard".'
+              : 'New distributed lots are minted frequently. Check back soon or create your own.'}
           </p>
           {hasSearched && (
-            <button
-              onClick={handleClear}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-            >
-              Clear Search
+            <button onClick={handleClear} className="btn sky sm mt-2">
+              Clear Search &amp; Show All
             </button>
           )}
-        </div>
+        </section>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {auctions.map((auction) => {
-            const currentBid = auction.current_highest_bid || auction.starting_price;
+        <div className="auction-grid" id="auction-marketplace-grid">
+          {paginatedAuctions.map((auction) => {
+            const currentBid = parseFloat(
+              String(auction.current_highest_bid || auction.starting_price || 0)
+            );
             const distanceNum =
               auction.distance !== undefined && auction.distance !== null
                 ? parseFloat(String(auction.distance))
                 : null;
+            const isTopMatch =
+              distanceNum !== null && !isNaN(distanceNum) && distanceNum < 0.3;
+            const sprite = getCategorySprite(
+              auction.category,
+              auction.title,
+              auction.description
+            );
 
-            // Subtle, polished badge if distance is highly relevant (< 0.3)
-            const isTopMatch = distanceNum !== null && !isNaN(distanceNum) && distanceNum < 0.3;
+            const hours =
+              auction.seconds_remaining && auction.seconds_remaining > 0
+                ? Math.floor(auction.seconds_remaining / 3600)
+                : 0;
+            const mins =
+              auction.seconds_remaining && auction.seconds_remaining > 0
+                ? Math.floor((auction.seconds_remaining % 3600) / 60)
+                : 0;
 
             return (
-              <div
-                key={auction.auction_id}
-                className={`group bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md border p-6 flex flex-col justify-between transition-all duration-200 ${
-                  isTopMatch
-                    ? 'border-emerald-300/80 dark:border-emerald-700/80 ring-1 ring-emerald-500/20'
-                    : 'border-gray-100 dark:border-gray-700/80'
-                }`}
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <h2 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
-                      {auction.title}
-                    </h2>
-
-                    {/* Subtle relevance badge */}
-                    {isTopMatch && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 flex-shrink-0 animate-fade-in shadow-xs">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Top Match
-                      </span>
-                    )}
+              <article key={auction.auction_id} className="panel card">
+                {/* Status Header */}
+                <div className="card-header">
+                  <div className="flex items-center gap-2">
+                    <span className="tag lime">LIVE</span>
+                    {isTopMatch && <span className="tag gold">TOP MATCH</span>}
                   </div>
-
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 line-clamp-2 leading-relaxed">
-                    {auction.description || 'No description provided.'}
-                  </p>
+                  <span className="tag dark text-[8px]">#{auction.auction_id}</span>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700/60 space-y-2.5">
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Current Bid</span>
-                    <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                      ${parseFloat(String(currentBid || 0)).toFixed(2)}
-                    </span>
+                {/* Asset / Voxel Stage (Hidden behind comments for future toggle)
+                <div className="stage">
+                  <span className="tag lime">LIVE</span>
+                  {isTopMatch && <span className="tag gold you">TOP MATCH</span>}
+                  <div className="vox-sway">
+                    <PixelSprite name={sprite} size={110} />
                   </div>
+                </div>
+                */}
 
-                  {auction.seller_username && (
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-500 dark:text-gray-400">Seller</span>
-                      <span className="font-medium text-gray-800 dark:text-gray-200">{auction.seller_username}</span>
-                    </div>
-                  )}
+                {/* Card Content */}
+                <div className="card-body">
+                  <h3>{auction.title}</h3>
+                  <p className="desc">{auction.description || 'No description provided.'}</p>
 
-                  {auction.total_bids !== undefined && (
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-500 dark:text-gray-400">Total Bids</span>
-                      <span className="font-medium text-gray-800 dark:text-gray-200">{auction.total_bids}</span>
+                  <dl className="kv" style={{ marginTop: 'auto', paddingTop: '10px' }}>
+                    <div>
+                      <dt>CURRENT BID</dt>
+                      <dd className="big">{currentBid.toFixed(2)} PTS</dd>
                     </div>
-                  )}
 
-                  {auction.seconds_remaining !== undefined && auction.seconds_remaining > 0 && (
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-500 dark:text-gray-400">Time Left</span>
-                      <span className="font-semibold text-rose-500">
-                        {Math.floor(auction.seconds_remaining / 3600)}h {Math.floor((auction.seconds_remaining % 3600) / 60)}m
-                      </span>
-                    </div>
-                  )}
+                    {auction.seller_username && (
+                      <div>
+                        <dt>SELLER</dt>
+                        <dd>{auction.seller_username}</dd>
+                      </div>
+                    )}
+
+                    {auction.total_bids !== undefined && (
+                      <div>
+                        <dt>BIDS</dt>
+                        <dd>{auction.total_bids}</dd>
+                      </div>
+                    )}
+
+                    {auction.seconds_remaining !== undefined && (
+                      <div>
+                        <dt>TIME LEFT</dt>
+                        <dd className="hot">
+                          {auction.seconds_remaining > 0
+                            ? `${hours}h ${mins}m`
+                            : 'CLOSING'}
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
 
                   <Link
                     href={`/auction/${auction.auction_id}`}
-                    className="mt-4 w-full flex items-center justify-center py-2.5 px-4 border border-transparent rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all"
+                    className="btn wide no-underline"
+                    style={{ marginTop: '16px', marginBottom: '4px' }}
                   >
-                    View Details &amp; Bid
+                    ENTER BIDDING →
                   </Link>
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>
+      )}
+
+      {/* Retro Synthwave Pagination Deck */}
+      {totalItems > 0 && (
+        <nav
+          aria-label="Marketplace pagination"
+          className="panel pad flex items-center justify-between flex-wrap gap-4 mt-8"
+        >
+          <div className="text-xs text-[var(--dim)]">
+            SHOWING <b className="text-[var(--gold)]">{(safePage - 1) * pageSize + 1}–{Math.min(safePage * pageSize, totalItems)}</b> OF <b className="text-[var(--cream)]">{totalItems}</b> LISTINGS
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                disabled={safePage === 1}
+                onClick={() => handlePageChange(safePage - 1)}
+                className="btn sm ghost"
+                title="Previous Page"
+              >
+                &laquo; PREV
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                if (totalPages > 7 && pageNum !== 1 && pageNum !== totalPages && Math.abs(pageNum - safePage) > 1) {
+                  if (Math.abs(pageNum - safePage) === 2) {
+                    return <span key={pageNum} className="text-xs text-[var(--dim)] px-1">...</span>;
+                  }
+                  return null;
+                }
+                const isCurrent = pageNum === safePage;
+                return (
+                  <button
+                    key={pageNum}
+                    type="button"
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`btn sm ${isCurrent ? 'lime' : 'ghost'}`}
+                    aria-current={isCurrent ? 'page' : undefined}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              <button
+                type="button"
+                disabled={safePage === totalPages}
+                onClick={() => handlePageChange(safePage + 1)}
+                className="btn sm ghost"
+                title="Next Page"
+              >
+                NEXT &raquo;
+              </button>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 text-xs text-[var(--dim)]">
+            <span>PER PAGE:</span>
+            {[6, 9, 12, 18].map((size) => (
+              <button
+                key={size}
+                type="button"
+                onClick={() => {
+                  setPageSize(size);
+                  setCurrentPage(1);
+                }}
+                className={`chipb ${pageSize === size ? 'active' : ''}`}
+                style={{ padding: '6px 10px', fontSize: '9px' }}
+              >
+                {size}
+              </button>
+            ))}
+          </div>
+        </nav>
       )}
     </div>
   );

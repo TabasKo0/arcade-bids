@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { PixelSprite } from '@/lib/sprites';
 
 export default function SignupPage() {
   const [username, setUsername] = useState('');
@@ -49,33 +50,52 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
-        <div>
-          <h2 className="mt-2 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            Create an account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
-            Sign up to buy, sell, or manage auctions on CockroachDB
+    <div
+      style={{
+        minHeight: 'calc(100vh - 200px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px 0',
+      }}
+    >
+      <div className="panel pad lime" style={{ maxWidth: 520, width: '100%' }}>
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <div style={{ display: 'inline-block', marginBottom: 12 }}>
+            <PixelSprite name="coin" size={48} />
+          </div>
+          <div className="eyebrow" style={{ color: 'var(--lime)', letterSpacing: '0.12em' }}>
+            NEW PLAYER REGISTRATION // +10,000 PTS INITIAL MINT
+          </div>
+          <h1
+            className="h1"
+            style={{
+              fontSize: 22,
+              margin: '10px 0 6px',
+              color: 'var(--gold)',
+              textShadow: '3px 3px 0 var(--roseD), 6px 6px 0 var(--black)',
+            }}
+          >
+            INITIALIZE PLAYER
+          </h1>
+          <p className="sub" style={{ fontSize: 20, margin: '0 auto', color: 'var(--dim)' }}>
+            Join the distributed auction platform. Every new account is credited with 10,000 PTS wallet balance.
           </p>
         </div>
 
         {error && (
-          <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 rounded-xl text-rose-700 dark:text-rose-300 text-sm flex items-start gap-2.5">
-            <svg className="w-5 h-5 flex-shrink-0 text-rose-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div>
-              <p className="font-semibold text-xs uppercase tracking-wider">Signup Error</p>
-              <p className="mt-0.5">{error}</p>
-            </div>
+          <div className="err" style={{ marginBottom: 20 }} role="alert">
+            <span style={{ fontFamily: 'var(--f-display)', fontSize: 10, display: 'block', marginBottom: 4 }}>
+              [REGISTRATION_FAILED]
+            </span>
+            {error}
           </div>
         )}
 
-        <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 18 }}>
           <div>
-            <label htmlFor="username" className="block text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1.5">
-              Username
+            <label htmlFor="username" className="lbl">
+              PLAYER CALLSIGN / USERNAME
             </label>
             <input
               id="username"
@@ -84,14 +104,14 @@ export default function SignupPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="appearance-none block w-full px-3.5 py-2.5 border border-gray-300 dark:border-gray-600 placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm"
-              placeholder="johndoe"
+              className="field"
+              placeholder="e.g. cyber_bidder"
             />
           </div>
 
           <div>
-            <label htmlFor="email-address" className="block text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1.5">
-              Email address
+            <label htmlFor="email-address" className="lbl">
+              COMM CHANNEL / EMAIL ADDRESS
             </label>
             <input
               id="email-address"
@@ -101,14 +121,14 @@ export default function SignupPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="appearance-none block w-full px-3.5 py-2.5 border border-gray-300 dark:border-gray-600 placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm"
-              placeholder="user@example.com"
+              className="field"
+              placeholder="player@auctionhub.local"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1.5">
-              Password
+            <label htmlFor="password" className="lbl">
+              SECURITY KEY (MIN 6 CHARACTERS)
             </label>
             <input
               id="password"
@@ -119,49 +139,68 @@ export default function SignupPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="appearance-none block w-full px-3.5 py-2.5 border border-gray-300 dark:border-gray-600 placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm"
-              placeholder="At least 6 characters"
+              className="field"
+              placeholder="••••••••••••"
             />
           </div>
-          
+
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1.5">
-              Role
+            <label htmlFor="role" className="lbl">
+              CONSOLE ACCESS PRIVILEGES
             </label>
             <select
+              id="role"
               value={role}
               onChange={(e) => setRole(e.target.value as any)}
-              className="block w-full px-3.5 py-2.5 text-sm border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700/80 dark:text-white"
+              className="field"
             >
-              <option value="BOTH">Buyer &amp; Seller (Both)</option>
-              <option value="BUYER">Buyer Only</option>
-              <option value="SELLER">Seller Only</option>
+              <option value="BOTH">FULL ACCESS - BUYER &amp; SELLER (BOTH)</option>
+              <option value="BUYER">BIDDER ONLY - BUYER</option>
+              <option value="SELLER">AUCTIONEER ONLY - SELLER</option>
             </select>
           </div>
 
-          <div className="pt-2">
+          <div style={{ marginTop: 14 }}>
             <button
               type="submit"
               disabled={isPending}
-              className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-all cursor-pointer shadow-sm"
+              className="btn lime wide"
+              style={{ padding: '16px 20px', marginBottom: 4 }}
             >
               {isPending ? (
-                <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Creating Account...
-                </span>
+                <span>INITIALIZING CITIZEN RECORD...</span>
               ) : (
-                'Create Account'
+                <>
+                  <PixelSprite name="bolt" size={16} />
+                  <span>MINT ACCOUNT &amp; CLAIM 10,000 PTS</span>
+                </>
               )}
             </button>
           </div>
 
-          <div className="text-center text-sm pt-2">
-            <Link href="/login" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
-              Already have an account? Sign in
+          <div
+            style={{
+              textAlign: 'center',
+              marginTop: 18,
+              paddingTop: 18,
+              borderTop: '2px dashed rgba(184, 171, 230, 0.25)',
+              fontSize: 18,
+            }}
+          >
+            <span style={{ color: 'var(--dim)' }}>ALREADY HAVE A CREDENTIAL? </span>
+            <Link
+              href="/login"
+              style={{
+                color: 'var(--sky)',
+                textDecoration: 'underline',
+                fontFamily: 'var(--f-display)',
+                fontSize: 10,
+                letterSpacing: '0.04em',
+                display: 'inline-block',
+                marginTop: 4,
+              }}
+            >
+              SIGN IN TO CONSOLE &rarr;
             </Link>
           </div>
         </form>

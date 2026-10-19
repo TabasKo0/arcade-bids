@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Auction System",
-  description: "Online Auction Platform",
+  title: "ARCADEBID // CockroachDB Distributed Auction Engine",
+  description: "Synthwave Retro Arcade Auction Platform powered by CockroachDB with Vector AI search, Autonomous Trigger-Driven Proxy Bidding, and Point-Based Solvency.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -25,11 +25,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-gray-50 dark:bg-gray-900">
-        <Suspense fallback={<div className="h-16 bg-white dark:bg-gray-800 shadow"></div>}>
+      <body className="min-h-full flex flex-col">
+        <div className="bg-arcade" aria-hidden="true" />
+        <div className="stars" aria-hidden="true" />
+        <div className="floor" aria-hidden="true" />
+        <div className="crt" aria-hidden="true" />
+        <Suspense fallback={<div className="h-16 bg-transparent" />}>
           <Header />
         </Suspense>
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 w-full max-w-[1240px] mx-auto px-5 sm:px-8 py-8 md:py-10 relative z-10">
+          {children}
+        </main>
       </body>
     </html>
   );

@@ -1,7 +1,9 @@
 'use client';
 
 import { useActionState, useState, useEffect } from 'react';
+import Link from 'next/link';
 import { createAuction } from '@/app/actions/auction';
+import { PixelSprite, getCategorySprite } from '@/lib/sprites';
 
 export interface Category {
   category_id: string | number;
@@ -18,6 +20,12 @@ export default function CreateAuctionForm({
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>(
     initialCategories[0] ? String(initialCategories[0].category_id) : ''
   );
+
+  // Live preview state
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [startingPrice, setStartingPrice] = useState('');
+  const [durationHours, setDurationHours] = useState('24');
 
   // Fetch categories on mount from /api/categories
   useEffect(() => {
@@ -39,149 +47,191 @@ export default function CreateAuctionForm({
     loadCategories();
   }, []);
 
+  const selectedCategoryName =
+    categories.find((c) => String(c.category_id) === String(selectedCategoryId))
+      ?.category_name || '';
+
+  const sprite = getCategorySprite(selectedCategoryName, title, description);
+
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-md border border-gray-100 dark:border-gray-700 rounded-2xl p-6 sm:p-8 space-y-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
+    <div className="create">
+      {/* Left Column: Form */}
+      <section className="panel pad">
+        <h1 className="h2" style={{ marginBottom: '24px' }}>
           Create New Listing
         </h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          List your item for auction with CockroachDB vector embeddings and automated settlement.
-        </p>
-      </div>
 
-      <form action={formAction as unknown as (payload: FormData) => void} className="space-y-6">
-        <div>
-          <label htmlFor="title" className="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5">
-            Item Title
-          </label>
-          <input
-            type="text"
-            name="title"
-            id="title"
-            required
-            placeholder="e.g. Vintage Swiss Mechanical Watch"
-            className="block w-full border border-gray-300 dark:border-gray-600 rounded-xl shadow-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3.5 py-2.5 dark:bg-gray-700/80 dark:text-white"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="description" className="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5">
-            Detailed Description (Embeddings Generated Automatically)
-          </label>
-          <textarea
-            name="description"
-            id="description"
-            rows={4}
-            required
-            placeholder="Describe the condition, features, and materials. Our AI engine generates a 384-dimensional vector embedding for semantic search."
-            className="block w-full border border-gray-300 dark:border-gray-600 rounded-xl shadow-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3.5 py-2.5 dark:bg-gray-700/80 dark:text-white leading-relaxed"
-          ></textarea>
-        </div>
-
-        <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+        <form action={formAction as unknown as (payload: FormData) => void} className="form">
           <div>
-            <label htmlFor="startingPrice" className="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5">
-              Starting Price ($)
+            <label htmlFor="title" className="lbl">
+              Item Title
             </label>
             <input
-              type="number"
-              name="startingPrice"
-              id="startingPrice"
-              step="0.01"
-              min="0.01"
+              type="text"
+              name="title"
+              id="title"
               required
-              placeholder="50.00"
-              className="block w-full border border-gray-300 dark:border-gray-600 rounded-xl shadow-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3.5 py-2.5 dark:bg-gray-700/80 dark:text-white font-mono"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Mechanical Gaming Keyboard"
+              className="field"
             />
           </div>
 
           <div>
-            <label htmlFor="reservePrice" className="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5">
-              Reserve Price ($) <span className="text-gray-400 font-normal lowercase">(optional)</span>
+            <label htmlFor="description" className="lbl">
+              Detailed Description <small>- 384-DIM Vector Embedding</small>
             </label>
-            <input
-              type="number"
-              name="reservePrice"
-              id="reservePrice"
-              step="0.01"
-              min="0"
-              placeholder="100.00"
-              className="block w-full border border-gray-300 dark:border-gray-600 rounded-xl shadow-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3.5 py-2.5 dark:bg-gray-700/80 dark:text-white font-mono"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="durationHours" className="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5">
-              Duration (Hours)
-            </label>
-            <input
-              type="number"
-              name="durationHours"
-              id="durationHours"
-              min="1"
-              max="168"
-              defaultValue="24"
+            <textarea
+              name="description"
+              id="description"
+              rows={4}
               required
-              className="block w-full border border-gray-300 dark:border-gray-600 rounded-xl shadow-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3.5 py-2.5 dark:bg-gray-700/80 dark:text-white font-mono"
-            />
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Describe condition, features, and materials. Cosine matching is indexed automatically."
+              className="field"
+            ></textarea>
           </div>
 
-          {/* Exact CockroachDB Category Dropdown */}
-          <div>
-            <label htmlFor="categoryId" className="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5">
-              Category
-            </label>
-            <select
-              id="categoryId"
-              name="categoryId"
-              value={selectedCategoryId}
-              onChange={(e) => setSelectedCategoryId(e.target.value)}
-              required
-              className="block w-full border border-gray-300 dark:border-gray-600 rounded-xl shadow-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3.5 py-2.5 dark:bg-gray-700 dark:text-white cursor-pointer"
-            >
-              <option value="" disabled>Select a category...</option>
-              {categories.map((c) => (
-                <option key={String(c.category_id)} value={String(c.category_id)}>
-                  {c.category_name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {state?.error && (
-          <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 rounded-xl text-rose-700 dark:text-rose-300 text-sm flex items-start gap-2.5">
-            <svg className="w-5 h-5 flex-shrink-0 text-rose-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+          <div className="g2">
             <div>
-              <p className="font-semibold text-xs uppercase tracking-wider">Creation Error</p>
-              <p className="mt-0.5">{state.error}</p>
+              <label htmlFor="startingPrice" className="lbl">
+                Starting Price ($)
+              </label>
+              <input
+                type="number"
+                name="startingPrice"
+                id="startingPrice"
+                step="0.01"
+                min="0.01"
+                required
+                value={startingPrice}
+                onChange={(e) => setStartingPrice(e.target.value)}
+                placeholder="50.00"
+                className="field"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="reservePrice" className="lbl">
+                Reserve Price ($) <small>- Optional</small>
+              </label>
+              <input
+                type="number"
+                name="reservePrice"
+                id="reservePrice"
+                step="0.01"
+                min="0"
+                placeholder="100.00"
+                className="field"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="durationHours" className="lbl">
+                Duration (Hours)
+              </label>
+              <input
+                type="number"
+                name="durationHours"
+                id="durationHours"
+                min="1"
+                max="168"
+                value={durationHours}
+                onChange={(e) => setDurationHours(e.target.value)}
+                required
+                className="field"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="categoryId" className="lbl">
+                Category
+              </label>
+              <select
+                id="categoryId"
+                name="categoryId"
+                value={selectedCategoryId}
+                onChange={(e) => setSelectedCategoryId(e.target.value)}
+                required
+                className="field"
+              >
+                <option value="" disabled>Select a category...</option>
+                {categories.map((c) => (
+                  <option key={String(c.category_id)} value={String(c.category_id)}>
+                    {c.category_name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
-        )}
 
-        <div className="pt-4 flex justify-end">
-          <button
-            type="submit"
-            disabled={isPending || !selectedCategoryId}
-            className="w-full sm:w-auto inline-flex items-center gap-2 justify-center py-3 px-6 border border-transparent shadow-sm text-sm font-bold rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-all cursor-pointer"
-          >
-            {isPending ? (
-              <>
-                <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Publishing Auction...
-              </>
-            ) : (
-              'Publish Auction'
+          {state?.error && (
+            <div className="err text-xs">
+              <strong className="block uppercase font-['Press_Start_2P']">Creation Error</strong>
+              <span>{state.error}</span>
+            </div>
+          )}
+
+          <div className="row" style={{ justifyContent: 'flex-end', gap: '14px' }}>
+            <Link href="/my-auctions" className="btn ghost sm no-underline">
+              Cancel
+            </Link>
+            <button
+              type="submit"
+              disabled={isPending || !selectedCategoryId}
+              className="btn lime sm"
+            >
+              {isPending ? 'Publishing...' : 'Publish Auction'}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      {/* Right Column: Live Arcade Preview */}
+      <aside className="preview">
+        <span className="eyebrow" style={{ marginBottom: '14px', display: 'block' }}>
+          Live Preview
+        </span>
+        <article className="panel hot card">
+          <div className="card-header">
+            <span className="tag lime">PREVIEW</span>
+            {selectedCategoryName && (
+              <span className="tag sky text-[8px]">{selectedCategoryName}</span>
             )}
-          </button>
-        </div>
-      </form>
+          </div>
+
+          {/* 3D Stage with Voxel Sprite (hidden for now)
+          <div className="stage">
+            {selectedCategoryName && (
+              <span className="tag sky absolute top-3 left-3">{selectedCategoryName}</span>
+            )}
+            <div className="vox-sway">
+              <PixelSprite name={sprite} size={110} />
+            </div>
+          </div>
+          */}
+          <div className="card-body">
+            <h3>{title || 'Your item title'}</h3>
+            <p className="desc">
+              {description || 'Describe condition, features, and anything a bidder should know.'}
+            </p>
+            <dl className="kv">
+              <div>
+                <dt>Opening Bid</dt>
+                <dd className="big">
+                  ${parseFloat(startingPrice || '0').toFixed(2)} PTS
+                </dd>
+              </div>
+              <div>
+                <dt>Duration</dt>
+                <dd className="hot">{durationHours || 24}h 00m</dd>
+              </div>
+            </dl>
+          </div>
+        </article>
+      </aside>
     </div>
   );
 }

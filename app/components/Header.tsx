@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getSessionUserId } from '@/lib/auth';
 import { logout } from '@/app/actions/auth';
 import pool from '@/lib/db';
+import { PixelSprite } from '@/lib/sprites';
 
 export default async function Header() {
   const userId = await getSessionUserId();
@@ -41,149 +42,119 @@ export default async function Header() {
   });
 
   return (
-    <nav className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100 dark:border-gray-800 shadow-2xs transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Brand Logo */}
-          <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-2 group">
-              <span className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-black text-base shadow-sm group-hover:scale-105 transition-transform">
-                ⚡
-              </span>
-              <span className="text-xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-                Auction<span className="text-blue-600 dark:text-blue-400">Hub</span>
-              </span>
+    <header className="hud">
+      <div className="w-full max-w-[1200px] mx-auto hud-in">
+        {/* Left Side: Brand Logo & Navigation */}
+        <div className="flex items-center gap-4 flex-wrap">
+          <Link href="/" className="logo flex items-center gap-2.5 no-underline cursor-pointer group">
+            <PixelSprite name="bolt" size={24} />
+            <span className="font-['Press_Start_2P'] text-[14px] tracking-wide text-white">
+              ARCADE<span style={{ color: 'var(--gold)' }}>BID</span>
+            </span>
+          </Link>
+
+          <nav className="nav-group">
+            <Link href="/" className="tab no-underline">
+              <PixelSprite name="gavel" size={14} />
+              <span>Market</span>
             </Link>
-
-            {/* Main Nav Links */}
-            <div className="hidden md:flex items-center space-x-1">
-              <Link
-                href="/"
-                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
-              >
-                Marketplace
-              </Link>
-              {user && (
-                <>
-                  <Link
-                    href="/my-bids"
-                    className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
-                  >
-                    My Bids
-                  </Link>
-                  <Link
-                    href="/my-auctions"
-                    className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
-                  >
-                    My Auctions
-                  </Link>
-                  <Link
-                    href="/profile/receipts"
-                    className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
-                  >
-                    Receipts
-                  </Link>
-                  {user.role === 'ADMIN' && (
-                    <Link
-                      href="/admin"
-                      className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 px-3 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-1"
-                    >
-                      <span>🛡️</span> Admin Panel
-                    </Link>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Right Action Section */}
-          <div className="flex items-center space-x-3">
-            {user ? (
+            {user && (
               <>
-                {/* 1. Global Point Display Widget */}
-                <Link
-                  href={user.role === 'ADMIN' ? '/admin' : '/profile'}
-                  title={
-                    lockedPoints > 0
-                      ? `Wallet Balance: ${formattedBalance} PTS | Locked Liabilities: ${formattedLocked} PTS`
-                      : `Wallet Balance: ${formattedBalance} PTS`
-                  }
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-amber-50 to-emerald-50 dark:from-amber-950/40 dark:to-emerald-950/40 border border-amber-300/80 dark:border-amber-700/60 rounded-full text-xs font-bold shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
-                >
-                  <span className="text-sm group-hover:scale-110 transition-transform">🪙</span>
-                  <span className="font-mono font-extrabold text-gray-900 dark:text-white tabular-nums tracking-tight">
-                    {formattedBalance}
-                  </span>
-                  <span className="text-[10px] uppercase font-bold text-amber-700 dark:text-amber-400 tracking-wider">
-                    PTS
-                  </span>
-                  {lockedPoints > 0 && (
-                    <span className="flex items-center gap-0.5 ml-1 px-1.5 py-0.5 rounded-full bg-amber-100/90 dark:bg-amber-900/60 text-[10px] text-amber-800 dark:text-amber-300 border border-amber-300/80 dark:border-amber-700/60 font-semibold font-mono">
-                      <span>(🔒</span>
-                      <span>{formattedLocked} Locked)</span>
-                    </span>
-                  )}
+                <Link href="/my-bids" className="tab no-underline">
+                  <PixelSprite name="lens" size={14} />
+                  <span>My Bids</span>
                 </Link>
-
-                {/* Create Auction Action Button */}
-                <Link
-                  href="/create"
-                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all"
-                >
-                  <span>+</span> Create
+                <Link href="/my-auctions" className="tab no-underline">
+                  <PixelSprite name="chest" size={14} />
+                  <span>Auctions</span>
                 </Link>
-
-                {/* Profile Avatar & Username */}
-                <Link
-                  href="/profile"
-                  className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  title="View Profile"
-                >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs uppercase shadow-xs">
-                    {user.username.charAt(0)}
-                  </div>
-                  <span className="hidden lg:inline text-sm font-semibold text-gray-800 dark:text-gray-200">
-                    {user.username}
-                  </span>
+                <Link href="/profile/receipts" className="tab no-underline">
+                  <PixelSprite name="receipt" size={14} />
+                  <span>Receipts</span>
                 </Link>
-
-                {/* Logout */}
-                <form action={logout}>
-                  <button
-                    type="submit"
-                    className="p-2 text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl transition-colors cursor-pointer"
-                    title="Sign Out"
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                      />
-                    </svg>
-                  </button>
-                </form>
+                {user.role === 'ADMIN' && (
+                  <Link href="/admin" className="tab admin no-underline">
+                    <PixelSprite name="shield" size={14} />
+                    <span>Admin</span>
+                  </Link>
+                )}
               </>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <Link
-                  href="/login"
-                  className="text-gray-700 dark:text-gray-300 hover:text-blue-600 px-3.5 py-2 rounded-xl text-sm font-medium transition-colors"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/signup"
-                  className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-semibold shadow-xs transition-all"
-                >
-                  Get Started
-                </Link>
-              </div>
             )}
-          </div>
+          </nav>
+        </div>
+
+        {/* Right Side: Wallet, Create, User & Logout */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {user ? (
+            <>
+              {/* Wallet Pill */}
+              <Link
+                href={user.role === 'ADMIN' ? '/admin' : '/profile'}
+                title={
+                  lockedPoints > 0
+                    ? `Wallet: ${formattedBalance} PTS | Locked: ${formattedLocked} PTS`
+                    : `Wallet: ${formattedBalance} PTS`
+                }
+                className="wallet no-underline cursor-pointer"
+              >
+                <PixelSprite name="coin" size={16} />
+                <span className="text-[8px] text-[var(--goldD)]">PTS</span>
+                <span className="text-[11px] text-[var(--gold)]">{formattedBalance}</span>
+                {lockedPoints > 0 && (
+                  <span className="text-[8px] text-[var(--rose)]" title={`Locked: ${formattedLocked}`}>
+                    🔒{formattedLocked}
+                  </span>
+                )}
+              </Link>
+
+              {/* Create Auction Button */}
+              <Link
+                href="/create"
+                className="btn sky sm no-underline"
+                style={{ height: 34, padding: '0 12px', display: 'inline-flex', alignItems: 'center', marginBottom: 0 }}
+              >
+                + CREATE
+              </Link>
+
+              {/* User Profile Badge */}
+              <Link href="/profile" className="userchip no-underline" title="View Profile">
+                <div className="w-5 h-5 bg-[var(--edge)] text-white flex items-center justify-center font-['Press_Start_2P'] text-[8px]">
+                  {user.username.slice(0, 2).toUpperCase()}
+                </div>
+                <span className="text-[9px] text-[var(--cream)]">{user.username}</span>
+              </Link>
+
+              {/* Logout Button */}
+              <form action={logout} style={{ display: 'inline' }}>
+                <button
+                  type="submit"
+                  className="icon-btn cursor-pointer"
+                  title="Sign Out"
+                >
+                  ✕
+                </button>
+              </form>
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link
+                href="/login"
+                className="btn ghost sm no-underline"
+                style={{ height: 34, padding: '0 12px', display: 'inline-flex', alignItems: 'center', marginBottom: 0 }}
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/signup"
+                className="btn lime sm no-underline"
+                style={{ height: 34, padding: '0 12px', display: 'inline-flex', alignItems: 'center', marginBottom: 0 }}
+              >
+                Get Started
+              </Link>
+            </div>
+          )}
         </div>
       </div>
-    </nav>
+    </header>
   );
 }

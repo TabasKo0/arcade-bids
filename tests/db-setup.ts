@@ -81,7 +81,7 @@ export async function teardownTestDatabase(): Promise<void> {
     `, [TEST_EMAILS]);
 
     await client.query(`
-      UPDATE USERS SET rating_score = 0.00 WHERE email = ANY($1)
+      UPDATE USERS SET rating_score = 0.00, wallet_balance = 50000.00 WHERE email = ANY($1)
     `, [TEST_EMAILS]);
   } catch (err) {
     console.warn('Teardown warning:', err);
@@ -116,40 +116,40 @@ export async function setupTestDatabase(): Promise<TestSeedData> {
     const passwordHash = bcrypt.hashSync('Password123!', 8);
 
     const sellerRes = await client.query(
-      `INSERT INTO USERS (username, email, password_hash, role, rating_score)
-       VALUES ('test_seller', 'seller@test.com', $1, 'SELLER', 0.00)
+      `INSERT INTO USERS (username, email, password_hash, role, rating_score, wallet_balance)
+       VALUES ('test_seller', 'seller@test.com', $1, 'SELLER', 0.00, 50000.00)
        ON CONFLICT (email) DO UPDATE 
-       SET username = 'test_seller', password_hash = $1, role = 'SELLER', rating_score = 0.00
+       SET username = 'test_seller', password_hash = $1, role = 'SELLER', rating_score = 0.00, wallet_balance = 50000.00
        RETURNING user_id`,
       [passwordHash]
     );
     const sellerId = String(sellerRes.rows[0].user_id);
 
     const buyerRes = await client.query(
-      `INSERT INTO USERS (username, email, password_hash, role, rating_score)
-       VALUES ('test_buyer', 'buyer@test.com', $1, 'BUYER', 0.00)
+      `INSERT INTO USERS (username, email, password_hash, role, rating_score, wallet_balance)
+       VALUES ('test_buyer', 'buyer@test.com', $1, 'BUYER', 0.00, 50000.00)
        ON CONFLICT (email) DO UPDATE 
-       SET username = 'test_buyer', password_hash = $1, role = 'BUYER', rating_score = 0.00
+       SET username = 'test_buyer', password_hash = $1, role = 'BUYER', rating_score = 0.00, wallet_balance = 50000.00
        RETURNING user_id`,
       [passwordHash]
     );
     const buyerId = String(buyerRes.rows[0].user_id);
 
     const buyer2Res = await client.query(
-      `INSERT INTO USERS (username, email, password_hash, role, rating_score)
-       VALUES ('test_buyer2', 'buyer2@test.com', $1, 'BUYER', 0.00)
+      `INSERT INTO USERS (username, email, password_hash, role, rating_score, wallet_balance)
+       VALUES ('test_buyer2', 'buyer2@test.com', $1, 'BUYER', 0.00, 50000.00)
        ON CONFLICT (email) DO UPDATE 
-       SET username = 'test_buyer2', password_hash = $1, role = 'BUYER', rating_score = 0.00
+       SET username = 'test_buyer2', password_hash = $1, role = 'BUYER', rating_score = 0.00, wallet_balance = 50000.00
        RETURNING user_id`,
       [passwordHash]
     );
     const buyer2Id = String(buyer2Res.rows[0].user_id);
 
     const adminRes = await client.query(
-      `INSERT INTO USERS (username, email, password_hash, role, rating_score)
-       VALUES ('test_admin', 'admin@test.com', $1, 'ADMIN', 0.00)
+      `INSERT INTO USERS (username, email, password_hash, role, rating_score, wallet_balance)
+       VALUES ('test_admin', 'admin@test.com', $1, 'ADMIN', 0.00, 50000.00)
        ON CONFLICT (email) DO UPDATE 
-       SET username = 'test_admin', password_hash = $1, role = 'ADMIN', rating_score = 0.00
+       SET username = 'test_admin', password_hash = $1, role = 'ADMIN', rating_score = 0.00, wallet_balance = 50000.00
        RETURNING user_id`,
       [passwordHash]
     );

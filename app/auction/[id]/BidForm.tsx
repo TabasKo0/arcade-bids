@@ -221,92 +221,97 @@ export default function BidForm({
   };
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-700/80 p-6 rounded-2xl border border-gray-200 dark:border-gray-600 shadow-sm space-y-6">
+    <div className="panel hot pad space-y-6">
       {/* Live Countdown & Anti-Sniping visual display */}
-      <div className="border-b border-gray-200 dark:border-gray-600/70 pb-5">
-        <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-          Time Remaining
-        </span>
-        <div className="mt-2 flex items-center justify-between flex-wrap gap-3">
-          <CountdownTimer
-            endTime={currentEndTime}
-            onExpire={handleCountdownExpire}
-            isExtended={isExtended}
-          />
-          <div className="text-right">
-            <span className="text-xs text-gray-500 dark:text-gray-400 block">Leading Bid</span>
-            <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
-              ${currentBase.toFixed(2)}
-            </span>
+      <div className="flex items-end justify-between flex-wrap gap-4 pb-5 border-b-4 border-dotted border-[rgba(184,171,230,0.25)]">
+        <div>
+          <span className="lbl">Time Remaining</span>
+          <div className="mt-2">
+            <CountdownTimer
+              endTime={currentEndTime}
+              onExpire={handleCountdownExpire}
+              isExtended={isExtended}
+            />
           </div>
         </div>
 
-        {extendedNotice && (
-          <div className="mt-3 p-2.5 bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 rounded-xl text-amber-800 dark:text-amber-200 text-xs flex items-center gap-2 animate-fade-in">
-            <span className="text-base">⚡</span>
-            <span>
-              <strong>Anti-Sniping Activated!</strong> A bid in the closing minutes automatically extended this auction by 5 minutes.
-            </span>
+        <div className="text-right">
+          <span className="lbl">Leading Bid</span>
+          <div className="money text-2xl sm:text-3xl">
+            ${currentBase.toFixed(2)} PTS
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Expiration Transition State: 2s Spinner */}
+      {extendedNotice && (
+        <div className="p-3 bg-[var(--black)] border-l-4 border-[var(--gold)] text-[var(--goldL)] text-xs flex items-center gap-2">
+          <span>⚡</span>
+          <span>
+            <strong>Anti-Sniping Activated!</strong> A bid in the closing minutes automatically extended this auction by 5 minutes.
+          </span>
+        </div>
+      )}
+
+      {/* Expiration Transition State: Spinner */}
       {isFinalizing && (
-        <div className="p-8 text-center bg-white dark:bg-gray-800 rounded-xl border border-blue-200 dark:border-blue-800 shadow-xs space-y-3 animate-pulse">
-          <div className="w-8 h-8 mx-auto border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <h4 className="text-base font-bold text-gray-900 dark:text-white">Finalizing Results...</h4>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+        <div className="p-8 text-center bg-[var(--black)] border border-[var(--sky)] space-y-3 animate-pulse">
+          <div className="w-8 h-8 mx-auto border-4 border-[var(--sky)] border-t-transparent rounded-full animate-spin"></div>
+          <h4 className="text-sm font-['Press_Start_2P'] text-[var(--cream)]">Finalizing Results...</h4>
+          <p className="text-xs text-[var(--dim)]">
             Verifying final bid rankings and executing settlement on CockroachDB.
           </p>
         </div>
       )}
 
-      {/* Final Outcome Banners (Requirement 3) */}
+      {/* Final Outcome Banners */}
       {!isFinalizing && finalOutcome && (
         <div className="space-y-4">
           {finalOutcome.type === 'WON' && (
-            <div className="p-6 bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-2xl shadow-lg text-center space-y-3 animate-fade-in">
+            <div className="panel pad text-center space-y-3 border-2 border-[var(--gold)] bg-[var(--black)]">
               <span className="text-4xl block">🏆</span>
               <div>
-                <h4 className="text-xl font-extrabold tracking-tight">
+                <h4 className="text-base sm:text-lg font-['Press_Start_2P'] text-[var(--gold)]">
                   Auction Won by {finalOutcome.winner || 'Highest Bidder'}!
                 </h4>
-                <p className="text-xs text-emerald-100 font-medium mt-1">
+                <p className="text-xs text-[var(--limeL)] mt-1">
                   Reserve price was satisfied. Point settlement completed and held in Escrow.
                 </p>
               </div>
               <div className="pt-2 flex flex-wrap justify-center items-center gap-3">
                 <Link
                   href="/profile/receipts"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-emerald-800 hover:bg-emerald-50 rounded-xl text-xs font-bold shadow-xs transition-transform hover:scale-105"
+                  className="btn sm no-underline"
                 >
-                  <span>🧾</span> View Payment Receipt
+                  🧾 View Payment Receipt
                 </Link>
                 <Link
                   href="/my-bids"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-800/80 hover:bg-emerald-800 text-white rounded-xl text-xs font-semibold border border-emerald-400/50 shadow-xs transition-colors"
+                  className="btn ghost sm no-underline"
                 >
-                  <span>🔒</span> Escrow Protected
+                  🔒 Escrow Protected
                 </Link>
               </div>
             </div>
           )}
 
           {finalOutcome.type === 'RESERVE_NOT_MET' && (
-            <div className="p-5 bg-rose-50 dark:bg-rose-950/50 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200 rounded-xl text-center space-y-1">
+            <div className="panel pad border-2 border-[var(--rose)] text-center space-y-2 bg-[var(--black)]">
               <span className="text-2xl block">🛑</span>
-              <h4 className="text-base font-bold">Auction Ended: Reserve Not Met</h4>
-              <p className="text-xs text-rose-600 dark:text-rose-400">
+              <h4 className="text-sm font-['Press_Start_2P'] text-[var(--rose)]">
+                Auction Ended: Reserve Not Met
+              </h4>
+              <p className="text-xs text-[var(--dim)]">
                 The highest bid did not satisfy the seller's confidential reserve price.
               </p>
             </div>
           )}
 
           {finalOutcome.type === 'NO_BIDS' && (
-            <div className="p-5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-center space-y-1">
-              <h4 className="text-base font-bold">Auction Closed</h4>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+            <div className="panel pad text-center space-y-2 bg-[var(--black)]">
+              <h4 className="text-sm font-['Press_Start_2P'] text-[var(--cream)]">
+                Auction Closed
+              </h4>
+              <p className="text-xs text-[var(--dim)]">
                 This auction ended with no bids placed.
               </p>
             </div>
@@ -314,78 +319,59 @@ export default function BidForm({
         </div>
       )}
 
-      {/* Active Bidding Form (Hidden if Finalized or Outcome Displayed) */}
+      {/* Active Bidding Form */}
       {!isFinalizing && !finalOutcome && (
-        <div>
+        <div className="bidform">
           {/* Solvency Trigger Rejection Toast / Banner (P0005) */}
           {isSolvencyError && (
-            <div className="mb-4 flex items-start gap-3.5 p-4 bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700/80 rounded-2xl text-amber-900 dark:text-amber-200 text-sm shadow-sm animate-shake">
-              <div className="w-9 h-9 rounded-xl bg-amber-200/80 dark:bg-amber-900/80 flex items-center justify-center flex-shrink-0 text-amber-800 dark:text-amber-200 text-base font-bold shadow-2xs">
-                🛡️
+            <div className="mb-4 p-4 bg-[var(--black)] border-l-8 border-[var(--gold)] text-sm space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-['Press_Start_2P'] text-[10px] text-[var(--gold)]">
+                  SOLVENCY DEFENDER ACTIVE
+                </span>
+                <span className="tag gold">ERRCODE P0005</span>
               </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-bold text-xs uppercase tracking-wider text-amber-800 dark:text-amber-300">
-                    Solvency Defender Active
-                  </p>
-                  <span className="text-[10px] font-mono font-bold bg-amber-200 dark:bg-amber-900/90 text-amber-900 dark:text-amber-200 px-2 py-0.5 rounded-full border border-amber-300 dark:border-amber-700">
-                    ERRCODE P0005
-                  </span>
-                </div>
-                <p className="mt-1 text-xs sm:text-sm font-medium leading-relaxed text-amber-950 dark:text-amber-100">
-                  {errorMessage}
-                </p>
-                <div className="mt-2.5 pt-2 border-t border-amber-200 dark:border-amber-800/60 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300">
-                  <span>Need more points for this auction?</span>
-                  <Link href="/admin" className="font-bold underline hover:text-amber-950 dark:hover:text-white">
-                    Deposit via Admin Mint &rarr;
-                  </Link>
-                </div>
+              <p className="text-xs text-[var(--cream)] leading-relaxed">
+                {errorMessage}
+              </p>
+              <div className="pt-2 border-t border-[rgba(184,171,230,0.2)] flex items-center justify-between text-xs">
+                <span className="text-[var(--dim)]">Need more points?</span>
+                <Link href="/admin" className="text-[var(--gold)] underline hover:text-white">
+                  Deposit via Admin Mint &rarr;
+                </Link>
               </div>
             </div>
           )}
 
           {/* Standard Trigger Rejection Error Banner */}
           {!isSolvencyError && errorMessage && (
-            <div className="mb-4 flex items-start gap-3 p-3.5 bg-red-50 dark:bg-red-950/40 border border-red-300 dark:border-red-800 rounded-xl text-red-700 dark:text-red-300 text-sm animate-shake">
-              <svg className="w-5 h-5 flex-shrink-0 text-red-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <div>
-                <p className="font-semibold text-xs tracking-wider uppercase text-red-800 dark:text-red-200">Bid Error</p>
-                <p className="mt-0.5">{errorMessage}</p>
-              </div>
+            <div className="err mb-4">
+              <strong className="block text-xs uppercase font-['Press_Start_2P']">Bid Error</strong>
+              <span className="text-xs">{errorMessage}</span>
             </div>
           )}
 
           {/* Success Banner */}
           {successMessage && (
-            <div className="mb-4 flex items-start gap-3 p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-xl text-emerald-700 dark:text-emerald-300 text-sm">
-              <svg className="w-5 h-5 flex-shrink-0 text-emerald-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-              </svg>
-              <div>
-                <p className="font-semibold text-xs tracking-wider uppercase text-emerald-800 dark:text-emerald-200">Bid Accepted</p>
-                <p className="mt-0.5">{successMessage}</p>
-              </div>
+            <div className="mb-4 p-3 bg-[var(--black)] border-l-8 border-[var(--lime)] text-xs text-[var(--limeL)]">
+              <strong className="block font-['Press_Start_2P'] text-[10px]">Bid Accepted</strong>
+              <span>{successMessage}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <div className="flex justify-between items-baseline mb-1">
-                <label htmlFor="bidAmount" className="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+              <div className="bidtop mb-2">
+                <label htmlFor="bidAmount" className="lbl" style={{ margin: 0 }}>
                   Your Bid Amount
                 </label>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  Min Next: <strong className="text-gray-800 dark:text-gray-200">${minRequiredBid.toFixed(2)}</strong> (+${minIncrement.toFixed(2)})
+                <span className="min text-xs text-[var(--dim)]">
+                  Min Next: <strong className="text-[var(--cream)]">${minRequiredBid.toFixed(2)}</strong> (+${minIncrement.toFixed(2)})
                 </span>
               </div>
 
-              <div className="relative rounded-xl shadow-xs">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                  <span className="text-gray-500 sm:text-base font-bold">$</span>
-                </div>
+              <div className="money-in">
+                <span>$</span>
                 <input
                   type="number"
                   id="bidAmount"
@@ -396,44 +382,46 @@ export default function BidForm({
                   onChange={(e) => setBidAmount(e.target.value)}
                   disabled={isSubmitting || isAuctionClosed}
                   required
-                  className={`block w-full pl-8 pr-12 text-base font-bold border rounded-xl py-3 focus:outline-none transition-all dark:bg-gray-800 dark:text-white ${
-                    isBelowMin && !isAuctionClosed
-                      ? 'border-amber-400 focus:ring-2 focus:ring-amber-400 text-amber-900 dark:text-amber-200'
-                      : 'border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500'
-                  } ${isAuctionClosed ? 'opacity-60 bg-gray-100 cursor-not-allowed' : ''}`}
+                  className="field"
                 />
               </div>
 
+              {/* Quick Increment Buttons */}
+              {!isAuctionClosed && (
+                <div className="quick mt-3 flex gap-2 flex-wrap">
+                  {[minIncrement, minIncrement * 2, minIncrement * 5, minIncrement * 10].map((inc) => (
+                    <button
+                      key={inc}
+                      type="button"
+                      className="chipb"
+                      onClick={() => setBidAmount((minRequiredBid + inc).toFixed(2))}
+                    >
+                      +${inc.toFixed(0)}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {/* Preventative helper text */}
               {isBelowMin && !isAuctionClosed && (
-                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1.5 flex items-center gap-1 font-medium">
-                  <span>ℹ</span> Must be at least ${minRequiredBid.toFixed(2)} (required increment: +${minIncrement.toFixed(2)})
+                <p className="text-xs text-[var(--rose)] mt-1.5 font-medium">
+                  Must be at least ${minRequiredBid.toFixed(2)} (required increment: +${minIncrement.toFixed(2)})
                 </p>
               )}
             </div>
 
-            {/* Submit Button with Preventative Lock */}
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting || isBelowMin || isAuctionClosed}
-              className={`w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white transition-all ${
-                isAuctionClosed
-                  ? 'bg-gray-500 cursor-not-allowed opacity-75'
-                  : isBelowMin
-                  ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-60'
-                  : 'bg-emerald-600 hover:bg-emerald-700 cursor-pointer shadow-md hover:shadow-lg'
+              className={`btn wide ${
+                isAuctionClosed || isBelowMin ? 'ghost' : 'lime'
               }`}
             >
               {isAuctionClosed ? (
                 'Auction Closed'
               ) : isSubmitting ? (
-                <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Placing Bid...
-                </span>
+                'Placing Bid...'
               ) : isBelowMin ? (
                 `Enter $${minRequiredBid.toFixed(2)} or more`
               ) : (

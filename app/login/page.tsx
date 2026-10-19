@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { PixelSprite } from '@/lib/sprites';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -49,33 +50,52 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
-        <div>
-          <h2 className="mt-2 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            Sign in to your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
-            Enter your email and password to access the auction platform
+    <div
+      style={{
+        minHeight: 'calc(100vh - 200px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px 0',
+      }}
+    >
+      <div className="panel pad hot" style={{ maxWidth: 500, width: '100%' }}>
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <div style={{ display: 'inline-block', marginBottom: 12 }}>
+            <PixelSprite name="player" size={48} />
+          </div>
+          <div className="eyebrow" style={{ color: 'var(--sky)', letterSpacing: '0.12em' }}>
+            AUTHENTICATION CONSOLE // LOCAL NODE 26257
+          </div>
+          <h1
+            className="h1"
+            style={{
+              fontSize: 22,
+              margin: '10px 0 6px',
+              color: 'var(--gold)',
+              textShadow: '3px 3px 0 var(--roseD), 6px 6px 0 var(--black)',
+            }}
+          >
+            INSERT CREDENTIALS
+          </h1>
+          <p className="sub" style={{ fontSize: 20, margin: '0 auto', color: 'var(--dim)' }}>
+            Enter your email and security key to enter the live arcade bidding floor.
           </p>
         </div>
 
         {error && (
-          <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 rounded-xl text-rose-700 dark:text-rose-300 text-sm flex items-start gap-2.5">
-            <svg className="w-5 h-5 flex-shrink-0 text-rose-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div>
-              <p className="font-semibold text-xs uppercase tracking-wider">Login Error</p>
-              <p className="mt-0.5">{error}</p>
-            </div>
+          <div className="err" style={{ marginBottom: 20 }} role="alert">
+            <span style={{ fontFamily: 'var(--f-display)', fontSize: 10, display: 'block', marginBottom: 4 }}>
+              [AUTH_REJECTED]
+            </span>
+            {error}
           </div>
         )}
 
-        <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 18 }}>
           <div>
-            <label htmlFor="email-address" className="block text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1.5">
-              Email address
+            <label htmlFor="email-address" className="lbl">
+              EMAIL ADDRESS
             </label>
             <input
               id="email-address"
@@ -85,14 +105,14 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="appearance-none block w-full px-3.5 py-2.5 border border-gray-300 dark:border-gray-600 placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm"
-              placeholder="user@example.com"
+              className="field"
+              placeholder="player1@auctionhub.local"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1.5">
-              Password
+            <label htmlFor="password" className="lbl">
+              SECURITY KEY / PASSWORD
             </label>
             <input
               id="password"
@@ -102,34 +122,52 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="appearance-none block w-full px-3.5 py-2.5 border border-gray-300 dark:border-gray-600 placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm"
-              placeholder="••••••••"
+              className="field"
+              placeholder="••••••••••••"
             />
           </div>
 
-          <div>
+          <div style={{ marginTop: 14 }}>
             <button
               type="submit"
               disabled={isPending}
-              className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-all cursor-pointer shadow-sm"
+              className="btn lime wide"
+              style={{ padding: '16px 20px', marginBottom: 4 }}
             >
               {isPending ? (
-                <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Signing in...
-                </span>
+                <span>CONNECTING TO CLUSTER...</span>
               ) : (
-                'Sign in'
+                <>
+                  <PixelSprite name="bolt" size={16} />
+                  <span>SIGN IN TO CONSOLE</span>
+                </>
               )}
             </button>
           </div>
 
-          <div className="text-center text-sm pt-2">
-            <Link href="/signup" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
-              Don't have an account? Sign up
+          <div
+            style={{
+              textAlign: 'center',
+              marginTop: 18,
+              paddingTop: 18,
+              borderTop: '2px dashed rgba(184, 171, 230, 0.25)',
+              fontSize: 18,
+            }}
+          >
+            <span style={{ color: 'var(--dim)' }}>NO PLAYER RECORD FOUND? </span>
+            <Link
+              href="/signup"
+              style={{
+                color: 'var(--sky)',
+                textDecoration: 'underline',
+                fontFamily: 'var(--f-display)',
+                fontSize: 10,
+                letterSpacing: '0.04em',
+                display: 'inline-block',
+                marginTop: 4,
+              }}
+            >
+              INSERT COIN // REGISTER &rarr;
             </Link>
           </div>
         </form>

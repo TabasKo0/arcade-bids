@@ -21,9 +21,5 @@ export default async function CreateAuctionPage() {
     category_name: row.category_name,
   }));
 
-  return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <CreateAuctionForm categories={categories} />
-    </div>
-  );
+  return <CreateAuctionForm categories={categories} />;
 }
