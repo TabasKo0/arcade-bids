@@ -79,6 +79,7 @@ export async function GET(
     // Fetch caller's active proxy limit if authenticated
     const userId = request.cookies.get('user_id')?.value;
     let userProxyLimit: number | null = null;
+    let userHighestBid: number | null = null;
     if (userId) {
       try {
         const proxyRes = await query(
@@ -90,6 +91,16 @@ export async function GET(
         if (proxyRes.rows.length > 0) {
           userProxyLimit = parseFloat(String(proxyRes.rows[0].proxy_limit));
         }
+
+        const myBidRes = await query(
+          `SELECT MAX(bid_amount) AS my_max_bid 
+           FROM BIDS 
+           WHERE auction_id = $1 AND bidder_id = $2`,
+          [auctionId, userId]
+        );
+        if (myBidRes.rows.length > 0 && myBidRes.rows[0].my_max_bid !== null) {
+          userHighestBid = parseFloat(String(myBidRes.rows[0].my_max_bid));
+        }
       } catch (e) {
         // Non-blocking
       }
@@ -98,6 +109,7 @@ export async function GET(
     return NextResponse.json({
       ...row,
       user_proxy_limit: userProxyLimit,
+      user_highest_bid: userHighestBid,
     });
   } catch (error: any) {
     if (error?.digest === 'NEXT_PRERENDER_INTERRUPTED') {

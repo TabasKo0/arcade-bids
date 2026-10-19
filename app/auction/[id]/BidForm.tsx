@@ -17,6 +17,7 @@ interface BidFormProps {
   reservePrice: number | string | null;
   totalBids?: number;
   bidderId?: string | number | null;
+  initialUserBid?: number | null;
 }
 
 export default function BidForm({
@@ -28,6 +29,7 @@ export default function BidForm({
   reservePrice,
   totalBids = 0,
   bidderId,
+  initialUserBid,
 }: BidFormProps) {
   const router = useRouter();
 
@@ -43,6 +45,9 @@ export default function BidForm({
   // Real-time state
   const [currentHighestBid, setCurrentHighestBid] = useState<number>(
     parseFloat(String(initialHighestBid || 0))
+  );
+  const [myHighestBid, setMyHighestBid] = useState<number | null>(
+    initialUserBid !== undefined && initialUserBid !== null ? parseFloat(String(initialUserBid)) : null
   );
   const [currentTotalBids, setCurrentTotalBids] = useState<number>(totalBids);
   const [currentEndTime, setCurrentEndTime] = useState<string | Date>(initialEndTime);
@@ -88,6 +93,24 @@ export default function BidForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSolvencyError, setIsSolvencyError] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Synchronize state with SWR real-time updates
+  useEffect(() => {
+    if (swrAuctionData) {
+      if (swrAuctionData.current_highest_bid !== undefined && swrAuctionData.current_highest_bid !== null) {
+        setCurrentHighestBid(parseFloat(String(swrAuctionData.current_highest_bid || 0)));
+      }
+      if (swrAuctionData.user_highest_bid !== undefined && swrAuctionData.user_highest_bid !== null) {
+        setMyHighestBid(parseFloat(String(swrAuctionData.user_highest_bid)));
+      }
+      if (swrAuctionData.total_bids !== undefined) {
+        setCurrentTotalBids(parseInt(String(swrAuctionData.total_bids || 0), 10));
+      }
+      if (swrAuctionData.status) {
+        setStatus(swrAuctionData.status);
+      }
+    }
+  }, [swrAuctionData]);
 
   // Update bid input default whenever highest bid changes
   useEffect(() => {
@@ -194,6 +217,8 @@ export default function BidForm({
         }
       } else {
         setSuccessMessage(`Success! Your bid of $${parsedInputBid.toFixed(2)} has been placed.`);
+        setMyHighestBid(parsedInputBid);
+        setCurrentHighestBid(parsedInputBid);
 
         // Revalidate auction data to check for anti-sniping extension & highest bid updates
         const refreshRes = await fetch(`/api/auction/${auctionId}`);
@@ -245,6 +270,75 @@ export default function BidForm({
           </div>
         </div>
       </div>
+
+      {/* Prominent User Bid Position Indicator */}
+      {myHighestBid !== null && myHighestBid > 0 ? (
+        <div
+          id="user-bid-indicator"
+          className={`p-3.5 border-2 flex items-center justify-between gap-3 flex-wrap ${
+            myHighestBid >= currentBase
+              ? 'border-[var(--lime)] bg-[rgba(85,239,196,0.12)]'
+              : 'border-[var(--rose)] bg-[rgba(255,107,129,0.12)]'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">
+              {myHighestBid >= currentBase ? '👑' : '⚠️'}
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <span
+                  className="font-['Press_Start_2P'] text-[10px]"
+                  style={{ color: myHighestBid >= currentBase ? 'var(--lime)' : 'var(--rose)' }}
+                >
+                  {myHighestBid >= currentBase ? 'YOU ARE WINNING' : 'YOU ARE OUTBID'}
+                </span>
+                <span
+                  className={`tag ${myHighestBid >= currentBase ? 'lime' : 'rose'}`}
+                  style={{ fontSize: '8px', padding: '1px 6px' }}
+                >
+                  {myHighestBid >= currentBase ? 'TOP POSITION' : 'OUTBID'}
+                </span>
+              </div>
+              <p className="text-xs text-[var(--cream)] m-0 mt-1">
+                {myHighestBid >= currentBase
+                  ? 'Your bid currently holds the top position in this auction.'
+                  : `Leading bid is $${currentBase.toFixed(2)} PTS. Increase your bid to reclaim the lead.`}
+              </p>
+            </div>
+          </div>
+
+          <div className="text-right">
+            <span className="lbl" style={{ margin: 0, fontSize: '9px' }}>
+              Your Highest Bid
+            </span>
+            <div
+              className="font-['Press_Start_2P'] text-sm"
+              style={{ color: myHighestBid >= currentBase ? 'var(--lime)' : 'var(--roseL)' }}
+            >
+              ${myHighestBid.toFixed(2)} PTS
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div
+          id="user-no-bid-indicator"
+          className="p-3 bg-[var(--black)] border border-[rgba(184,171,230,0.2)] flex items-center justify-between gap-3"
+        >
+          <div className="flex items-center gap-2.5">
+            <span className="text-base">🪙</span>
+            <div>
+              <span className="text-xs text-[var(--cream)] block font-bold">
+                No active bid from you yet
+              </span>
+              <span className="text-[11px] text-[var(--dim)]">
+                Place a bid below to join this auction.
+              </span>
+            </div>
+          </div>
+          <span className="tag dark text-[8px]">NOT BIDDING</span>
+        </div>
+      )}
 
       {extendedNotice && (
         <div className="p-3 bg-[var(--black)] border-l-4 border-[var(--gold)] text-[var(--goldL)] text-xs flex items-center gap-2">

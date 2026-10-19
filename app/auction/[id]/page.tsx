@@ -86,6 +86,7 @@ export default async function AuctionPage({ params }: { params: Promise<{ id: st
   const currentBid = auction.current_highest_bid || auction.starting_price;
 
   let initialProxyLimit: number | null = null;
+  let userHighestBid: number | null = null;
   if (userId && !isSeller) {
     try {
       const proxyRes = await pool.query(
@@ -96,6 +97,16 @@ export default async function AuctionPage({ params }: { params: Promise<{ id: st
       );
       if (proxyRes.rows.length > 0) {
         initialProxyLimit = parseFloat(String(proxyRes.rows[0].proxy_limit));
+      }
+
+      const myBidRes = await pool.query(
+        `SELECT MAX(bid_amount) AS my_max_bid 
+         FROM BIDS 
+         WHERE auction_id = $1 AND bidder_id = $2`,
+        [auctionId, userId]
+      );
+      if (myBidRes.rows.length > 0 && myBidRes.rows[0].my_max_bid !== null) {
+        userHighestBid = parseFloat(String(myBidRes.rows[0].my_max_bid));
       }
     } catch (e) {
       // Non-blocking
@@ -140,6 +151,21 @@ export default async function AuctionPage({ params }: { params: Promise<{ id: st
           <div className="flex items-center gap-2">
             <span className="eyebrow">Listing #{auction.auction_id}</span>
             {isSeller && <span className="tag gold">Your Listing</span>}
+            {userHighestBid !== null && (
+              <span
+                className={`tag ${
+                  userHighestBid >= parseFloat(String(currentBid)) ? 'lime' : 'rose'
+                }`}
+                title={
+                  userHighestBid >= parseFloat(String(currentBid))
+                    ? 'You currently hold the highest bid'
+                    : 'Another bidder has surpassed your bid'
+                }
+              >
+                {userHighestBid >= parseFloat(String(currentBid)) ? '👑 ' : '⚠️ '}
+                YOUR BID: ${userHighestBid.toFixed(2)} ({userHighestBid >= parseFloat(String(currentBid)) ? 'WINNING' : 'OUTBID'})
+              </span>
+            )}
           </div>
           <span
             className={`tag ${
@@ -223,30 +249,58 @@ export default async function AuctionPage({ params }: { params: Promise<{ id: st
 
           {/* Verified Bid Ledger Panel */}
           <section className="panel pad">
-            <h2 className="h3">Verified Bid Ledger</h2>
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <h2 className="h3 m-0">Verified Bid Ledger</h2>
+              {userHighestBid !== null && (
+                <span className="tag lime text-[9px]">
+                  YOUR MAX: ${userHighestBid.toFixed(2)} PTS
+                </span>
+              )}
+            </div>
             {recentBids.length === 0 ? (
               <p className="text-xs text-[var(--dim)]">
                 No bids placed yet. The first bidder sets the opening price.
               </p>
             ) : (
               <ul className="ledger">
-                {recentBids.map((b, idx) => (
-                  <li key={b.bid_id || idx}>
-                    <span className="n">#{recentBids.length - idx}</span>
-                    <span className="who">
-                      {b.username}
-                      <small>
-                        {new Date(b.placed_at).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </small>
-                    </span>
-                    <span className="amt">
-                      ${parseFloat(String(b.bid_amount)).toFixed(2)}
-                    </span>
-                  </li>
-                ))}
+                {recentBids.map((b, idx) => {
+                  const isMyBid = userId !== null && String(b.bidder_id) === String(userId);
+                  return (
+                    <li
+                      key={b.bid_id || idx}
+                      style={
+                        isMyBid
+                          ? {
+                              borderColor: 'var(--lime)',
+                              background: 'rgba(85, 239, 196, 0.08)',
+                            }
+                          : undefined
+                      }
+                    >
+                      <span className="n">#{recentBids.length - idx}</span>
+                      <span className="who">
+                        {b.username}
+                        {isMyBid && (
+                          <span
+                            className="tag lime"
+                            style={{ fontSize: '8px', padding: '1px 5px', marginLeft: '6px' }}
+                          >
+                            YOU
+                          </span>
+                        )}
+                        <small>
+                          {new Date(b.placed_at).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </small>
+                      </span>
+                      <span className={`amt ${isMyBid ? 'text-[var(--lime)] font-bold' : ''}`}>
+                        ${parseFloat(String(b.bid_amount)).toFixed(2)}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </section>
@@ -274,6 +328,7 @@ export default async function AuctionPage({ params }: { params: Promise<{ id: st
                 reservePrice={auction.reserve_price}
                 totalBids={auction.total_bids}
                 bidderId={userId}
+                initialUserBid={userHighestBid}
               />
 
               <ProxyBidForm

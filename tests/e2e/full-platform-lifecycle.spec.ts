@@ -312,6 +312,15 @@ test.describe('Exhaustive E2E User Acceptance Testing (UAT)', () => {
         const buyerRes = await client.query("SELECT user_id FROM USERS WHERE email = 'buyer@test.com'");
         const buyerId = buyerRes.rows[0].user_id;
 
+        // Re-activate auction end time so trigger check_auction_status allows the bid
+        await client.query(
+          `UPDATE AUCTIONS 
+           SET current_end_time = NOW() + INTERVAL '15 seconds',
+               status = 'ACTIVE'
+           WHERE auction_id = $1`,
+          [seedData.nearExpiryAuctionId]
+        );
+
         // Ensure buyer has the winning bid of 150.00 (which exceeds the 100.00 reserve)
         await client.query(
           `INSERT INTO BIDS (auction_id, bidder_id, bid_amount, bid_time)
